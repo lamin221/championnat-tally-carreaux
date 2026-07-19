@@ -29,7 +29,7 @@ export default function AdminMatchsPage() {
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
 
   // Formulaires d'événements
-  const [goalForm, setGoalForm] = useState({ scorer_id: "", assist_id: "", team_id: "", minute: "" });
+  const [goalForm, setGoalForm] = useState({ scorer_id: "", assist_id: "", team_id: "", minute: "", is_own_goal: false });
   const [sanctionForm, setSanctionForm] = useState({ player_id: "", type: "suspension_2min", minute: "" });
 
   async function loadData() {
@@ -100,16 +100,19 @@ export default function AdminMatchsPage() {
 
   async function addGoal(matchId: string) {
     if (!goalForm.scorer_id || !goalForm.team_id) return toast.error("Sélectionne buteur et équipe.");
+    // Pour un but contre son camp, le "buteur" appartient à l'équipe adverse
+    // de celle créditée du but au tableau de score.
     const { error } = await supabase.from("goals").insert({
       match_id: matchId,
       scorer_id: goalForm.scorer_id,
-      assist_id: goalForm.assist_id || null,
+      assist_id: goalForm.is_own_goal ? null : goalForm.assist_id || null,
       team_id: goalForm.team_id,
       minute: goalForm.minute ? Number(goalForm.minute) : null,
+      is_own_goal: goalForm.is_own_goal,
     });
     if (error) return toast.error(`Erreur : ${error.message}`);
     toast.success("But enregistré. Pense à mettre à jour le score du match.");
-    setGoalForm({ scorer_id: "", assist_id: "", team_id: "", minute: "" });
+    setGoalForm({ scorer_id: "", assist_id: "", team_id: "", minute: "", is_own_goal: false });
   }
 
   async function addSanction(matchId: string) {
@@ -227,18 +230,34 @@ export default function AdminMatchsPage() {
                 <div>
                   <p className="font-medium text-sm mb-2 flex items-center gap-1"><Goal size={14} /> Ajouter un but</p>
                   <div className="flex flex-col gap-2">
-                    <select value={goalForm.team_id} onChange={(e) => setGoalForm({ ...goalForm, team_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
-                      <option value="">Équipe</option>
+                    <select value={goalForm.team_id} onChange={(e) => setGoalForm({ ...goalForm, team_id: e.target.value, scorer_id: "" })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
+                      <option value="">Équipe créditée du but</option>
                       {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
+                    <label className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={goalForm.is_own_goal}
+                        onChange={(e) => setGoalForm({ ...goalForm, is_own_goal: e.target.checked, scorer_id: "", assist_id: "" })}
+                      />
+                      But contre son camp
+                    </label>
                     <select value={goalForm.scorer_id} onChange={(e) => setGoalForm({ ...goalForm, scorer_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
-                      <option value="">Buteur</option>
-                      {players.filter((p) => p.team_id === goalForm.team_id).map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+                      <option value="">{goalForm.is_own_goal ? "Joueur auteur du csc (équipe adverse)" : "Buteur"}</option>
+                      {players
+                        .filter((p) =>
+                          goalForm.is_own_goal
+                            ? p.team_id !== goalForm.team_id
+                            : p.team_id === goalForm.team_id
+                        )
+                        .map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
                     </select>
-                    <select value={goalForm.assist_id} onChange={(e) => setGoalForm({ ...goalForm, assist_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
-                      <option value="">Passeur (optionnel)</option>
-                      {players.filter((p) => p.team_id === goalForm.team_id).map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
-                    </select>
+                    {!goalForm.is_own_goal && (
+                      <select value={goalForm.assist_id} onChange={(e) => setGoalForm({ ...goalForm, assist_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
+                        <option value="">Passeur (optionnel)</option>
+                        {players.filter((p) => p.team_id === goalForm.team_id).map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+                      </select>
+                    )}
                     <input type="number" placeholder="Minute" value={goalForm.minute} onChange={(e) => setGoalForm({ ...goalForm, minute: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm" />
                     <button onClick={() => addGoal(m.id)} className="bg-tally text-white rounded-lg py-1.5 text-sm">Ajouter le but</button>
                   </div>
