@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --border: 220 13% 91%;
+  --muted: 220 14% 96%;
+}
+
+.dark {
+  --background: 222 47% 7%;
+  --foreground: 210 40% 98%;
+  --card: 222 40% 10%;
+  --border: 217 33% 20%;
+  --muted: 217 33% 15%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 9999px; }
+
+.card {
+  @apply bg-card border border-border rounded-2xl shadow-sm;
+}
+
+.stat-gradient-tally {
+  background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+}
+.stat-gradient-carreaux {
+  background: linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%);
+}
