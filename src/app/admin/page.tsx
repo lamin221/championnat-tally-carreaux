@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { Users, Calendar, Newspaper, Images, LogOut } from "lucide-react";
+import { Users, Calendar, Newspaper, Images, Shield, LogOut } from "lucide-react";
 
 const SECTIONS = [
+  { href: "/admin/equipes", label: "Gérer les équipes", icon: Shield },
   { href: "/admin/joueurs", label: "Gérer les joueurs", icon: Users },
   { href: "/admin/matchs", label: "Gérer les matchs", icon: Calendar },
   { href: "/admin/actualites", label: "Gérer les actualités", icon: Newspaper },
