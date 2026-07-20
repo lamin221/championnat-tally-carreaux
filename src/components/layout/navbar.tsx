@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Menu, X, Trophy } from "lucide-react";
+import { Trophy } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
 import { clsx } from "clsx";
 
@@ -20,14 +19,15 @@ const LINKS = [
 
 export function Navbar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-lg bg-background/80 border-b border-border">
+    <header className="sticky top-0 z-30 backdrop-blur-lg bg-background/80 border-b border-border">
       <nav className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-lg">
+        <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight">
           <Trophy className="text-tally" size={22} />
-          <span>Tally Carreaux</span>
+          <span>
+            <span className="text-tally">Tally</span> <span className="text-carreaux">Carreaux</span>
+          </span>
         </Link>
 
         <div className="hidden lg:flex items-center gap-1">
@@ -47,35 +47,8 @@ export function Navbar() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <button
-            className="lg:hidden w-9 h-9 flex items-center justify-center rounded-full border border-border"
-            onClick={() => setOpen(!open)}
-            aria-label="Menu"
-          >
-            {open ? <X size={18} /> : <Menu size={18} />}
-          </button>
-        </div>
+        <ThemeToggle />
       </nav>
-
-      {open && (
-        <div className="lg:hidden border-t border-border px-4 py-3 flex flex-col gap-1 animate-slide-up">
-          {LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setOpen(false)}
-              className={clsx(
-                "px-3 py-2 rounded-lg text-sm font-medium",
-                pathname === link.href ? "bg-muted" : "hover:bg-muted"
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-      )}
     </header>
   );
 }

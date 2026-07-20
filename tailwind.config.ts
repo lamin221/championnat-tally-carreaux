@@ -15,6 +15,10 @@ const config: Config = {
         muted: "hsl(var(--muted))",
       },
       borderRadius: { xl: "1rem", "2xl": "1.5rem" },
+      fontFamily: {
+        display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
+        body: ["var(--font-body)", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
       animation: {
         "fade-in": "fadeIn 0.5s ease-in-out",
         "slide-up": "slideUp 0.4s ease-out",

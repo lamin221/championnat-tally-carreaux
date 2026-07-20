@@ -11,21 +11,42 @@
 }
 
 .dark {
-  --background: 222 47% 7%;
+  --background: 222 47% 6%;
   --foreground: 210 40% 98%;
-  --card: 222 40% 10%;
-  --border: 217 33% 20%;
-  --muted: 217 33% 15%;
+  --card: 222 40% 9%;
+  --border: 217 33% 18%;
+  --muted: 217 33% 14%;
 }
 
 * {
   border-color: hsl(var(--border));
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background: hsl(var(--background));
   color: hsl(var(--foreground));
   transition: background-color 0.3s ease, color 0.3s ease;
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+/* Chiffres de score : toujours en police display, alignement tabulaire */
+.score-numeral {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -36,8 +57,34 @@ body {
 }
 
 .stat-gradient-tally {
-  background: linear-gradient(135deg, #DC2626 0%, #991B1B 100%);
+  background: linear-gradient(135deg, #DC2626 0%, #7F1D1D 100%);
 }
 .stat-gradient-carreaux {
-  background: linear-gradient(135deg, #1E40AF 0%, #1E3A8A 100%);
+  background: linear-gradient(135deg, #1E40AF 0%, #172554 100%);
+}
+
+/* Bandeau diagonal façon tableau d'affichage de stade, utilisé en hero */
+.scoreboard-split {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.scoreboard-split::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    var(--team-a-color, #DC2626) 0%,
+    var(--team-a-color, #DC2626) 48%,
+    var(--team-b-color, #1E40AF) 52%,
+    var(--team-b-color, #1E40AF) 100%
+  );
+  z-index: -1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
 }

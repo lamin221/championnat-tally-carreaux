@@ -1,0 +1,32 @@
+import type { LucideIcon } from "lucide-react";
+
+export function StatCard({
+  label,
+  value,
+  icon: Icon,
+  accent = "default",
+}: {
+  label: string;
+  value: string | number;
+  icon: LucideIcon;
+  accent?: "default" | "tally" | "carreaux";
+}) {
+  const accentClass =
+    accent === "tally"
+      ? "stat-gradient-tally text-white"
+      : accent === "carreaux"
+      ? "stat-gradient-carreaux text-white"
+      : "card";
+
+  return (
+    <div className={`${accentClass} rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-2 animate-fade-in active:scale-[0.98] transition-transform`}>
+      <div className="min-w-0">
+        <p className={`text-xs sm:text-sm truncate ${accent === "default" ? "text-foreground/60" : "text-white/80"}`}>
+          {label}
+        </p>
+        <p className="score-numeral text-2xl sm:text-3xl mt-0.5">{value}</p>
+      </div>
+      <Icon size={24} className={`shrink-0 ${accent === "default" ? "text-foreground/30" : "text-white/60"}`} />
+    </div>
+  );
+}

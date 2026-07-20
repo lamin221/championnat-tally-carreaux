@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   const statsA = teamStats.find((s) => s.team_id === teamA?.id);
   const statsB = teamStats.find((s) => s.team_id === teamB?.id);
 
-  const totalMatches = (statsA?.matches_played ?? 0);
+  const totalMatches = statsA?.matches_played ?? 0;
   const totalDraws = statsA?.draws ?? 0;
   const totalGoals = (statsA?.goals_scored ?? 0) + (statsB?.goals_scored ?? 0);
 
@@ -22,18 +22,49 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <section className="text-center py-8">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-          Championnat <span className="text-tally">Tally</span>{" "}
-          <span className="text-carreaux">Carreaux</span>
-        </h1>
-        <p className="text-foreground/60 mt-2">
-          Terrain Diéxal — Historique complet, statistiques et classements en temps réel
+      {/* Hero façon tableau d'affichage de stade : les deux couleurs d'équipe
+          se rencontrent sur une diagonale, comme sur un panneau de score. */}
+      <section
+        className="scoreboard-split rounded-3xl px-6 py-10 sm:py-14 text-white text-center"
+        style={
+          {
+            "--team-a-color": teamA?.primary_color ?? "#DC2626",
+            "--team-b-color": teamB?.primary_color ?? "#1E40AF",
+          } as React.CSSProperties
+        }
+      >
+        <p className="uppercase tracking-[0.2em] text-xs sm:text-sm text-white/70 font-medium">
+          Terrain Diéxal
         </p>
+        <h1 className="font-display font-bold text-3xl sm:text-5xl mt-3 leading-tight">
+          {teamA?.name ?? "Équipe A"}
+          <span className="mx-3 text-white/60 font-normal">vs</span>
+          {teamB?.name ?? "Équipe B"}
+        </h1>
+        <p className="text-white/80 mt-3 text-sm sm:text-base">
+          Historique complet, statistiques et classements en temps réel
+        </p>
+        <div className="flex items-center justify-center gap-8 sm:gap-14 mt-8">
+          <div>
+            <p className="score-numeral text-4xl sm:text-6xl">{statsA?.wins ?? 0}</p>
+            <p className="text-[11px] sm:text-xs uppercase tracking-wider text-white/70 mt-1">Victoires</p>
+          </div>
+          <div className="w-px h-12 bg-white/20" />
+          <div>
+            <p className="score-numeral text-4xl sm:text-6xl">{totalDraws}</p>
+            <p className="text-[11px] sm:text-xs uppercase tracking-wider text-white/70 mt-1">Nuls</p>
+          </div>
+          <div className="w-px h-12 bg-white/20" />
+          <div>
+            <p className="score-numeral text-4xl sm:text-6xl">{statsB?.wins ?? 0}</p>
+            <p className="text-[11px] sm:text-xs uppercase tracking-wider text-white/70 mt-1">Victoires</p>
+          </div>
+        </div>
       </section>
 
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard label="Matchs joués" value={totalMatches} icon={Calendar} />
+        <StatCard label="Buts marqués (total)" value={totalGoals} icon={GoalIcon} />
         <StatCard
           label={`Victoires ${teamA?.name ?? "Équipe A"}`}
           value={statsA?.wins ?? 0}
@@ -46,14 +77,11 @@ export default async function DashboardPage() {
           icon={Trophy}
           accent="carreaux"
         />
-        <StatCard label="Matchs nuls" value={totalDraws} icon={Handshake} />
-        <StatCard label="Buts marqués (total)" value={totalGoals} icon={GoalIcon} />
-        <StatCard label="Confrontations" value={totalMatches} icon={Swords} />
       </section>
 
       <section className="grid md:grid-cols-2 gap-6">
         <div>
-          <h2 className="font-semibold text-lg mb-3">Dernier match</h2>
+          <h2 className="font-display font-semibold text-lg mb-3">Dernier match</h2>
           {lastMatch && findTeam(lastMatch.home_team_id) && findTeam(lastMatch.away_team_id) ? (
             <MatchCard
               match={lastMatch}
@@ -65,7 +93,7 @@ export default async function DashboardPage() {
           )}
         </div>
         <div>
-          <h2 className="font-semibold text-lg mb-3">Prochain match</h2>
+          <h2 className="font-display font-semibold text-lg mb-3">Prochain match</h2>
           {nextMatch && findTeam(nextMatch.home_team_id) && findTeam(nextMatch.away_team_id) ? (
             <MatchCard
               match={nextMatch}
