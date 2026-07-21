@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/layout/navbar";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -47,6 +48,7 @@ export default function RootLayout({
           </footer>
           <MobileTabBar />
           <Toaster richColors position="top-right" />
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>
