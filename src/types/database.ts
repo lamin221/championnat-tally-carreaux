@@ -105,6 +105,14 @@ export interface Profile {
   created_at: string;
 }
 
+export interface MatchComment {
+  id: string;
+  match_id: string;
+  author_name: string;
+  content: string;
+  created_at: string;
+}
+
 // ---- Vues statistiques ----
 
 export interface PlayerStats {

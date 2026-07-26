@@ -4,6 +4,7 @@ import { fr } from "date-fns/locale";
 import { MapPin, Star, Goal as GoalIcon, ShieldAlert } from "lucide-react";
 import { getMatchById, getMatchDetails, getTeams, getPlayers } from "@/lib/queries";
 import { TeamBadge } from "@/components/ui/team-badge";
+import { CommentsSection } from "@/components/ui/comments-section";
 
 export default async function MatchDetailPage({
   params,
@@ -119,6 +120,8 @@ export default async function MatchDetailPage({
           </ul>
         </section>
       </div>
+
+      <CommentsSection matchId={match.id} />
     </div>
   );
 }
