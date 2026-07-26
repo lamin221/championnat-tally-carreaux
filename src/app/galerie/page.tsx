@@ -1,6 +1,6 @@
-import Image from "next/image";
 import { getGalleryItems } from "@/lib/queries";
 import { createClient } from "@/lib/supabase/server";
+import { GalleryGrid } from "@/components/ui/gallery-grid";
 
 export const metadata = { title: "Galerie — Tally Carreaux" };
 
@@ -22,24 +22,7 @@ export default async function GaleriePage() {
           apparaîtront ici automatiquement.
         </p>
       ) : (
-        <div className="columns-2 sm:columns-3 lg:columns-4 gap-4 space-y-4">
-          {withUrls.map((item) => (
-            <div key={item.id} className="break-inside-avoid rounded-2xl overflow-hidden card">
-              {item.type === "photo" ? (
-                <Image
-                  src={item.publicUrl}
-                  alt={item.caption ?? "Moment du championnat"}
-                  width={400}
-                  height={300}
-                  className="w-full h-auto object-cover"
-                />
-              ) : (
-                <video src={item.publicUrl} controls className="w-full h-auto" />
-              )}
-              {item.caption && <p className="p-2 text-xs text-foreground/60">{item.caption}</p>}
-            </div>
-          ))}
-        </div>
+        <GalleryGrid items={withUrls} />
       )}
     </div>
   );
