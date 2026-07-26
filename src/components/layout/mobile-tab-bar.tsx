@@ -37,19 +37,29 @@ export function MobileTabBar() {
             className="absolute bottom-20 left-3 right-3 card p-2 animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
-            {MORE_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMoreOpen(false)}
-                className={clsx(
-                  "block px-4 py-3 rounded-xl text-sm font-medium",
-                  pathname === link.href ? "bg-muted" : "hover:bg-muted"
-                )}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {MORE_LINKS.map((link) =>
+              link.href === "/login" ? (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="block px-4 py-3 rounded-xl text-sm font-medium hover:bg-muted border-t border-border mt-1 pt-3"
+                >
+                  {link.label}
+                </a>
+              ) : (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMoreOpen(false)}
+                  className={clsx(
+                    "block px-4 py-3 rounded-xl text-sm font-medium",
+                    pathname === link.href ? "bg-muted" : "hover:bg-muted"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              )
+            )}
           </div>
         </div>
       )}

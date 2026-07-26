@@ -45,7 +45,7 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link
+          <a
             href="/login"
             className={clsx(
               "ml-2 px-3 py-2 rounded-lg text-sm font-medium border border-border transition-colors",
@@ -55,7 +55,7 @@ export function Navbar() {
             )}
           >
             Admin
-          </Link>
+          </a>
         </div>
 
         <ThemeToggle />
