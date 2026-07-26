@@ -18,6 +18,7 @@ const MORE_LINKS = [
   { href: "/confrontations", label: "Confrontations" },
   { href: "/galerie", label: "Galerie" },
   { href: "/actualites", label: "Actualités" },
+  { href: "/login", label: "Connexion Admin" },
 ];
 
 export function MobileTabBar() {

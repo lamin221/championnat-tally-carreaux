@@ -45,6 +45,17 @@ export function Navbar() {
               {link.label}
             </Link>
           ))}
+          <Link
+            href="/login"
+            className={clsx(
+              "ml-2 px-3 py-2 rounded-lg text-sm font-medium border border-border transition-colors",
+              pathname === "/login"
+                ? "bg-muted text-foreground"
+                : "text-foreground/70 hover:text-foreground hover:bg-muted"
+            )}
+          >
+            Admin
+          </Link>
         </div>
 
         <ThemeToggle />
