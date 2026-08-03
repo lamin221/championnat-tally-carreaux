@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Match, MatchStatus, Player, Team } from "@/types/database";
 import { toast } from "sonner";
-import { Trash2, Pencil, Plus, Goal, ShieldAlert } from "lucide-react";
+import { Trash2, Pencil, Plus, Goal, ShieldAlert, Users } from "lucide-react";
 
 const EMPTY_MATCH = {
   id: "",
@@ -27,8 +27,10 @@ export default function AdminMatchsPage() {
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"composition" | "evenements">("composition");
+  const [lineupPlayerIds, setLineupPlayerIds] = useState<Set<string>>(new Set());
+  const [savingLineup, setSavingLineup] = useState(false);
 
-  // Formulaires d'événements
   const [goalForm, setGoalForm] = useState({ scorer_id: "", assist_id: "", team_id: "", minute: "", is_own_goal: false });
   const [sanctionForm, setSanctionForm] = useState({ player_id: "", type: "suspension_2min", minute: "" });
 
@@ -50,6 +52,11 @@ export default function AdminMatchsPage() {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function loadLineup(matchId: string) {
+    const { data } = await supabase.from("match_lineups").select("player_id").eq("match_id", matchId);
+    setLineupPlayerIds(new Set((data ?? []).map((l) => l.player_id)));
+  }
 
   async function handleSubmitMatch(e: React.FormEvent) {
     e.preventDefault();
@@ -98,10 +105,53 @@ export default function AdminMatchsPage() {
     setEditing(true);
   }
 
+  async function openEvents(matchId: string) {
+    if (selectedMatch === matchId) {
+      setSelectedMatch(null);
+      return;
+    }
+    setSelectedMatch(matchId);
+    setActiveTab("composition");
+    loadLineup(matchId);
+  }
+
+  function toggleLineupPlayer(playerId: string) {
+    setLineupPlayerIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(playerId)) next.delete(playerId);
+      else next.add(playerId);
+      return next;
+    });
+  }
+
+  async function saveLineup(matchId: string) {
+    setSavingLineup(true);
+
+    // Remplace entièrement la composition enregistrée par la sélection actuelle
+    const { error: deleteError } = await supabase.from("match_lineups").delete().eq("match_id", matchId);
+    if (deleteError) {
+      setSavingLineup(false);
+      return toast.error(`Erreur : ${deleteError.message}`);
+    }
+
+    if (lineupPlayerIds.size > 0) {
+      const rows = Array.from(lineupPlayerIds).map((playerId) => {
+        const player = players.find((p) => p.id === playerId)!;
+        return { match_id: matchId, player_id: playerId, team_id: player.team_id, is_starter: true };
+      });
+      const { error: insertError } = await supabase.from("match_lineups").insert(rows);
+      if (insertError) {
+        setSavingLineup(false);
+        return toast.error(`Erreur : ${insertError.message}`);
+      }
+    }
+
+    setSavingLineup(false);
+    toast.success("Composition enregistrée.");
+  }
+
   async function addGoal(matchId: string) {
     if (!goalForm.scorer_id || !goalForm.team_id) return toast.error("Sélectionne buteur et équipe.");
-    // Pour un but contre son camp, le "buteur" appartient à l'équipe adverse
-    // de celle créditée du but au tableau de score.
     const { error } = await supabase.from("goals").insert({
       match_id: matchId,
       scorer_id: goalForm.scorer_id,
@@ -127,6 +177,8 @@ export default function AdminMatchsPage() {
     toast.success("Sanction enregistrée.");
     setSanctionForm({ player_id: "", type: "suspension_2min", minute: "" });
   }
+
+  const selectedMatchData = matches.find((m) => m.id === selectedMatch);
 
   return (
     <div className="flex flex-col gap-8">
@@ -217,67 +269,115 @@ export default function AdminMatchsPage() {
                 <button onClick={() => startEdit(m)} className="p-2 rounded-lg hover:bg-muted"><Pencil size={16} /></button>
                 <button onClick={() => handleDeleteMatch(m.id)} className="p-2 rounded-lg hover:bg-muted text-red-600"><Trash2 size={16} /></button>
                 <button
-                  onClick={() => setSelectedMatch(selectedMatch === m.id ? null : m.id)}
+                  onClick={() => openEvents(m.id)}
                   className="text-xs px-3 py-2 rounded-lg bg-muted"
                 >
-                  Événements
+                  Gérer
                 </button>
               </div>
             </div>
 
-            {selectedMatch === m.id && (
-              <div className="mt-4 pt-4 border-t border-border grid sm:grid-cols-2 gap-4">
-                <div>
-                  <p className="font-medium text-sm mb-2 flex items-center gap-1"><Goal size={14} /> Ajouter un but</p>
-                  <div className="flex flex-col gap-2">
-                    <select value={goalForm.team_id} onChange={(e) => setGoalForm({ ...goalForm, team_id: e.target.value, scorer_id: "" })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
-                      <option value="">Équipe créditée du but</option>
-                      {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={goalForm.is_own_goal}
-                        onChange={(e) => setGoalForm({ ...goalForm, is_own_goal: e.target.checked, scorer_id: "", assist_id: "" })}
-                      />
-                      But contre son camp
-                    </label>
-                    <select value={goalForm.scorer_id} onChange={(e) => setGoalForm({ ...goalForm, scorer_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
-                      <option value="">{goalForm.is_own_goal ? "Joueur auteur du csc (équipe adverse)" : "Buteur"}</option>
-                      {players
-                        .filter((p) =>
-                          goalForm.is_own_goal
-                            ? p.team_id !== goalForm.team_id
-                            : p.team_id === goalForm.team_id
-                        )
-                        .map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
-                    </select>
-                    {!goalForm.is_own_goal && (
-                      <select value={goalForm.assist_id} onChange={(e) => setGoalForm({ ...goalForm, assist_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
-                        <option value="">Passeur (optionnel)</option>
-                        {players.filter((p) => p.team_id === goalForm.team_id).map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
-                      </select>
-                    )}
-                    <input type="number" placeholder="Minute" value={goalForm.minute} onChange={(e) => setGoalForm({ ...goalForm, minute: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm" />
-                    <button onClick={() => addGoal(m.id)} className="bg-tally text-white rounded-lg py-1.5 text-sm">Ajouter le but</button>
-                  </div>
+            {selectedMatch === m.id && selectedMatchData && (
+              <div className="mt-4 pt-4 border-t border-border">
+                <div className="flex gap-2 mb-4">
+                  <button
+                    onClick={() => setActiveTab("composition")}
+                    className={`text-sm px-3 py-1.5 rounded-lg flex items-center gap-1.5 ${activeTab === "composition" ? "bg-tally text-white" : "bg-muted"}`}
+                  >
+                    <Users size={14} /> Composition
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("evenements")}
+                    className={`text-sm px-3 py-1.5 rounded-lg ${activeTab === "evenements" ? "bg-tally text-white" : "bg-muted"}`}
+                  >
+                    Événements
+                  </button>
                 </div>
 
-                <div>
-                  <p className="font-medium text-sm mb-2 flex items-center gap-1"><ShieldAlert size={14} /> Ajouter une sanction</p>
-                  <div className="flex flex-col gap-2">
-                    <select value={sanctionForm.player_id} onChange={(e) => setSanctionForm({ ...sanctionForm, player_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
-                      <option value="">Joueur</option>
-                      {players.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
-                    </select>
-                    <select value={sanctionForm.type} onChange={(e) => setSanctionForm({ ...sanctionForm, type: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
-                      <option value="suspension_2min">Suspension 2 minutes</option>
-                      <option value="exclusion_definitive">Exclusion définitive</option>
-                    </select>
-                    <input type="number" placeholder="Minute" value={sanctionForm.minute} onChange={(e) => setSanctionForm({ ...sanctionForm, minute: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm" />
-                    <button onClick={() => addSanction(m.id)} className="bg-tally text-white rounded-lg py-1.5 text-sm">Ajouter la sanction</button>
+                {activeTab === "composition" && (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {[selectedMatchData.home_team_id, selectedMatchData.away_team_id].map((teamId) => (
+                      <div key={teamId}>
+                        <p className="font-medium text-sm mb-2">{teams.find((t) => t.id === teamId)?.name}</p>
+                        <div className="flex flex-col gap-1.5 max-h-64 overflow-y-auto pr-1">
+                          {players.filter((p) => p.team_id === teamId).map((p) => (
+                            <label key={p.id} className="flex items-center gap-2 text-sm py-1">
+                              <input
+                                type="checkbox"
+                                checked={lineupPlayerIds.has(p.id)}
+                                onChange={() => toggleLineupPlayer(p.id)}
+                              />
+                              #{p.jersey_number} {p.full_name}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => saveLineup(m.id)}
+                      disabled={savingLineup}
+                      className="bg-tally text-white rounded-lg py-2 text-sm sm:col-span-2 disabled:opacity-50"
+                    >
+                      {savingLineup ? "Enregistrement..." : "Enregistrer la composition"}
+                    </button>
                   </div>
-                </div>
+                )}
+
+                {activeTab === "evenements" && (
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <p className="font-medium text-sm mb-2 flex items-center gap-1"><Goal size={14} /> Ajouter un but</p>
+                      <div className="flex flex-col gap-2">
+                        <select value={goalForm.team_id} onChange={(e) => setGoalForm({ ...goalForm, team_id: e.target.value, scorer_id: "" })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
+                          <option value="">Équipe créditée du but</option>
+                          {teams.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                        <label className="flex items-center gap-2 text-sm">
+                          <input
+                            type="checkbox"
+                            checked={goalForm.is_own_goal}
+                            onChange={(e) => setGoalForm({ ...goalForm, is_own_goal: e.target.checked, scorer_id: "", assist_id: "" })}
+                          />
+                          But contre son camp
+                        </label>
+                        <select value={goalForm.scorer_id} onChange={(e) => setGoalForm({ ...goalForm, scorer_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
+                          <option value="">{goalForm.is_own_goal ? "Joueur auteur du csc (équipe adverse)" : "Buteur"}</option>
+                          {players
+                            .filter((p) =>
+                              goalForm.is_own_goal
+                                ? p.team_id !== goalForm.team_id
+                                : p.team_id === goalForm.team_id
+                            )
+                            .map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+                        </select>
+                        {!goalForm.is_own_goal && (
+                          <select value={goalForm.assist_id} onChange={(e) => setGoalForm({ ...goalForm, assist_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
+                            <option value="">Passeur (optionnel)</option>
+                            {players.filter((p) => p.team_id === goalForm.team_id).map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+                          </select>
+                        )}
+                        <input type="number" placeholder="Minute" value={goalForm.minute} onChange={(e) => setGoalForm({ ...goalForm, minute: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm" />
+                        <button onClick={() => addGoal(m.id)} className="bg-tally text-white rounded-lg py-1.5 text-sm">Ajouter le but</button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="font-medium text-sm mb-2 flex items-center gap-1"><ShieldAlert size={14} /> Ajouter une sanction</p>
+                      <div className="flex flex-col gap-2">
+                        <select value={sanctionForm.player_id} onChange={(e) => setSanctionForm({ ...sanctionForm, player_id: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
+                          <option value="">Joueur</option>
+                          {players.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+                        </select>
+                        <select value={sanctionForm.type} onChange={(e) => setSanctionForm({ ...sanctionForm, type: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm">
+                          <option value="suspension_2min">Suspension 2 minutes</option>
+                          <option value="exclusion_definitive">Exclusion définitive</option>
+                        </select>
+                        <input type="number" placeholder="Minute" value={sanctionForm.minute} onChange={(e) => setSanctionForm({ ...sanctionForm, minute: e.target.value })} className="border border-border rounded-lg px-2 py-1.5 bg-background text-sm" />
+                        <button onClick={() => addSanction(m.id)} className="bg-tally text-white rounded-lg py-1.5 text-sm">Ajouter la sanction</button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>

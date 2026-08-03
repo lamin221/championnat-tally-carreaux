@@ -5,6 +5,7 @@ import { MapPin, Star, Goal as GoalIcon, ShieldAlert } from "lucide-react";
 import { getMatchById, getMatchDetails, getTeams, getPlayers } from "@/lib/queries";
 import { TeamBadge } from "@/components/ui/team-badge";
 import { CommentsSection } from "@/components/ui/comments-section";
+import { ShareMatchButton } from "@/components/ui/share-match-button";
 
 export default async function MatchDetailPage({
   params,
@@ -31,6 +32,11 @@ export default async function MatchDetailPage({
   const lineupByTeam = (teamId: string) =>
     details.lineups.filter((l) => l.team_id === teamId).map((l) => findPlayer(l.player_id)).filter(Boolean);
 
+  const shareText =
+    match.status === "termine"
+      ? `⚽ ${homeTeam.name} ${match.home_score} - ${match.away_score} ${awayTeam.name} — Championnat Tally Carreaux`
+      : `📅 Prochain match : ${homeTeam.name} vs ${awayTeam.name} — Championnat Tally Carreaux`;
+
   return (
     <div className="flex flex-col gap-8 max-w-4xl mx-auto">
       <div className="card p-8 text-center">
@@ -40,7 +46,7 @@ export default async function MatchDetailPage({
         </p>
         <div className="flex items-center justify-center gap-8 mt-6">
           <TeamBadge team={homeTeam} size={56} />
-          <span className="text-4xl font-bold tabular-nums">
+          <span className="score-numeral text-4xl">
             {match.home_score} - {match.away_score}
           </span>
           <TeamBadge team={awayTeam} size={56} />
@@ -50,11 +56,18 @@ export default async function MatchDetailPage({
             <Star size={16} className="text-yellow-500" /> Homme du match : {motm.full_name}
           </p>
         )}
+        <div className="mt-6 flex justify-center">
+          <ShareMatchButton
+            title="Championnat Tally Carreaux"
+            text={shareText}
+            url={`https://championnat-tally-carreaux.vercel.app/matchs/${match.id}`}
+          />
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
         <section className="card p-5">
-          <h2 className="font-semibold mb-3 flex items-center gap-2">
+          <h2 className="font-display font-semibold mb-3 flex items-center gap-2">
             <GoalIcon size={18} /> Buteurs & passeurs
           </h2>
           {details.goals.length === 0 ? (
@@ -79,7 +92,7 @@ export default async function MatchDetailPage({
         </section>
 
         <section className="card p-5">
-          <h2 className="font-semibold mb-3 flex items-center gap-2">
+          <h2 className="font-display font-semibold mb-3 flex items-center gap-2">
             <ShieldAlert size={18} /> Sanctions
           </h2>
           {details.sanctions.length === 0 ? (
@@ -104,20 +117,28 @@ export default async function MatchDetailPage({
 
       <div className="grid md:grid-cols-2 gap-6">
         <section className="card p-5">
-          <h2 className="font-semibold mb-3">Composition {homeTeam.name}</h2>
-          <ul className="text-sm space-y-1">
-            {lineupByTeam(homeTeam.id).map((p) => (
-              <li key={p!.id}>#{p!.jersey_number} {p!.full_name}</li>
-            ))}
-          </ul>
+          <h2 className="font-display font-semibold mb-3">Composition {homeTeam.name}</h2>
+          {lineupByTeam(homeTeam.id).length === 0 ? (
+            <p className="text-sm text-foreground/50">Composition non renseignée.</p>
+          ) : (
+            <ul className="text-sm space-y-1">
+              {lineupByTeam(homeTeam.id).map((p) => (
+                <li key={p!.id}>#{p!.jersey_number} {p!.full_name}</li>
+              ))}
+            </ul>
+          )}
         </section>
         <section className="card p-5">
-          <h2 className="font-semibold mb-3">Composition {awayTeam.name}</h2>
-          <ul className="text-sm space-y-1">
-            {lineupByTeam(awayTeam.id).map((p) => (
-              <li key={p!.id}>#{p!.jersey_number} {p!.full_name}</li>
-            ))}
-          </ul>
+          <h2 className="font-display font-semibold mb-3">Composition {awayTeam.name}</h2>
+          {lineupByTeam(awayTeam.id).length === 0 ? (
+            <p className="text-sm text-foreground/50">Composition non renseignée.</p>
+          ) : (
+            <ul className="text-sm space-y-1">
+              {lineupByTeam(awayTeam.id).map((p) => (
+                <li key={p!.id}>#{p!.jersey_number} {p!.full_name}</li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
 
