@@ -1,6 +1,7 @@
 import { Trophy, Goal as GoalIcon, Handshake, Calendar, Swords } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
 import { MatchCard } from "@/components/ui/match-card";
+import { CountdownTimer } from "@/components/ui/countdown-timer";
 import { getTeams, getTeamStats, getLastAndNextMatch } from "@/lib/queries";
 
 export default async function DashboardPage() {
@@ -95,11 +96,19 @@ export default async function DashboardPage() {
         <div>
           <h2 className="font-display font-semibold text-lg mb-3">Prochain match</h2>
           {nextMatch && findTeam(nextMatch.home_team_id) && findTeam(nextMatch.away_team_id) ? (
-            <MatchCard
-              match={nextMatch}
-              homeTeam={findTeam(nextMatch.home_team_id)!}
-              awayTeam={findTeam(nextMatch.away_team_id)!}
-            />
+            <div className="flex flex-col gap-3">
+              <MatchCard
+                match={nextMatch}
+                homeTeam={findTeam(nextMatch.home_team_id)!}
+                awayTeam={findTeam(nextMatch.away_team_id)!}
+              />
+              <div className="card p-4">
+                <p className="text-center text-xs uppercase tracking-wide text-foreground/50">
+                  Coup d&apos;envoi dans
+                </p>
+                <CountdownTimer targetIso={`${nextMatch.match_date}T${nextMatch.match_time}`} />
+              </div>
+            </div>
           ) : (
             <p className="text-foreground/50 text-sm card p-5">Aucun match programmé.</p>
           )}
