@@ -40,45 +40,68 @@ export default async function DashboardPage() {
   const lastHome = lastMatch ? findTeam(lastMatch.home_team_id) : null;
   const lastAway = lastMatch ? findTeam(lastMatch.away_team_id) : null;
 
+  const colorA = teamA?.primary_color ?? "#DC2626";
+  const colorB = teamB?.primary_color ?? "#1E40AF";
+
   return (
     <div className="flex flex-col gap-8">
-      {/* Carte de confrontation compacte */}
-      <section className="card p-6 sm:p-8 animate-fade-in">
-        <p className="text-center text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+      {/* Hero façon app sportive premium : dégradé sombre aux couleurs des équipes,
+          gros score lumineux, effet "glow" discret derrière les badges. */}
+      <section
+        className="relative overflow-hidden rounded-3xl px-6 py-8 sm:py-10 text-white animate-fade-in"
+        style={{
+          background: `linear-gradient(145deg, ${colorA}dd 0%, #0f0b2e 45%, ${colorB}dd 100%)`,
+        }}
+      >
+        {/* halos lumineux décoratifs */}
+        <div
+          className="absolute -top-10 -left-10 w-40 h-40 rounded-full blur-3xl opacity-40 pointer-events-none"
+          style={{ background: colorA }}
+        />
+        <div
+          className="absolute -bottom-10 -right-10 w-40 h-40 rounded-full blur-3xl opacity-40 pointer-events-none"
+          style={{ background: colorB }}
+        />
+
+        <p className="relative text-center text-[11px] font-semibold uppercase tracking-[0.25em] text-white/60">
           Terrain Diéxal
         </p>
 
-        <div className="flex items-center justify-between gap-3 mt-5">
+        <div className="relative flex items-center justify-between gap-2 mt-6">
           <div className="flex flex-col items-center gap-2 flex-1">
-            <TeamBadge team={teamA ?? { name: "Équipe A", logo_url: null, primary_color: "#DC2626" }} size={48} showName={false} />
-            <span className="text-sm font-semibold text-center">{teamA?.name ?? "Équipe A"}</span>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center p-1.5">
+              <TeamBadge team={teamA ?? { name: "Équipe A", logo_url: null, primary_color: colorA }} size={44} showName={false} />
+            </div>
+            <span className="text-xs sm:text-sm font-semibold text-center leading-tight">{teamA?.name ?? "Équipe A"}</span>
           </div>
 
-          <div className="flex flex-col items-center px-2">
-            <span className="score-numeral text-3xl sm:text-4xl">
-              {h2h?.total_home_goals ?? 0} - {h2h?.total_away_goals ?? 0}
-            </span>
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground mt-1">Cumul buts</span>
+          <div className="flex flex-col items-center px-1">
+            <div className="score-numeral text-4xl sm:text-6xl tracking-tight">
+              {h2h?.total_home_goals ?? 0}<span className="text-white/40 mx-1">-</span>{h2h?.total_away_goals ?? 0}
+            </div>
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-widest text-white/50 mt-1">Cumul buts</span>
           </div>
 
           <div className="flex flex-col items-center gap-2 flex-1">
-            <TeamBadge team={teamB ?? { name: "Équipe B", logo_url: null, primary_color: "#1E40AF" }} size={48} showName={false} />
-            <span className="text-sm font-semibold text-center">{teamB?.name ?? "Équipe B"}</span>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center p-1.5">
+              <TeamBadge team={teamB ?? { name: "Équipe B", logo_url: null, primary_color: colorB }} size={44} showName={false} />
+            </div>
+            <span className="text-xs sm:text-sm font-semibold text-center leading-tight">{teamB?.name ?? "Équipe B"}</span>
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-6 mt-6 pt-5 border-t border-border text-sm">
+        <div className="relative flex items-center justify-center gap-6 sm:gap-10 mt-7 pt-5 border-t border-white/15 text-sm">
           <div className="text-center">
-            <p className="score-numeral text-lg">{statsA?.wins ?? 0}</p>
-            <p className="text-[11px] text-muted-foreground">Victoires</p>
+            <p className="score-numeral text-xl sm:text-2xl">{statsA?.wins ?? 0}</p>
+            <p className="text-[10px] uppercase tracking-wide text-white/50">Victoires</p>
           </div>
           <div className="text-center">
-            <p className="score-numeral text-lg">{totalDraws}</p>
-            <p className="text-[11px] text-muted-foreground">Nuls</p>
+            <p className="score-numeral text-xl sm:text-2xl">{totalDraws}</p>
+            <p className="text-[10px] uppercase tracking-wide text-white/50">Nuls</p>
           </div>
           <div className="text-center">
-            <p className="score-numeral text-lg">{statsB?.wins ?? 0}</p>
-            <p className="text-[11px] text-muted-foreground">Victoires</p>
+            <p className="score-numeral text-xl sm:text-2xl">{statsB?.wins ?? 0}</p>
+            <p className="text-[10px] uppercase tracking-wide text-white/50">Victoires</p>
           </div>
         </div>
       </section>
@@ -136,7 +159,7 @@ export default async function DashboardPage() {
       )}
 
       {nextMatch && findTeam(nextMatch.home_team_id) && findTeam(nextMatch.away_team_id) && (
-        <section className="card p-5 sm:p-6 border-tally/30">
+        <section className="card p-5 sm:p-6">
           <h2 className="font-display font-semibold text-base mb-4">Prochain match</h2>
           <div className="flex items-center justify-between gap-3">
             <TeamBadge team={findTeam(nextMatch.home_team_id)!} />
