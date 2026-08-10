@@ -1,5 +1,6 @@
-import { getPlayerStats, getTeams } from "@/lib/queries";
+import { getPlayerStats, getTeams, getTeamStats } from "@/lib/queries";
 import { TopPlayersBarChart, GoalsDistributionPie } from "@/components/charts/charts";
+import { TeamBadge } from "@/components/ui/team-badge";
 
 export const metadata = { title: "Classements — Tally Carreaux" };
 
@@ -14,7 +15,7 @@ function Ranking({
 }) {
   return (
     <section className="card p-5">
-      <h2 className="font-semibold mb-3">{title}</h2>
+      <h2 className="font-display font-semibold mb-3">{title}</h2>
       <ol className="space-y-2 text-sm">
         {players.slice(0, 5).map((p, i) => (
           <li key={p.name} className="flex justify-between items-center">
@@ -27,14 +28,23 @@ function Ranking({
             <span className="font-semibold">{p.value} {metric}</span>
           </li>
         ))}
-        {players.length === 0 && <p className="text-foreground/50">Aucune donnée.</p>}
+        {players.length === 0 && <p className="text-muted-foreground">Aucune donnée.</p>}
       </ol>
     </section>
   );
 }
 
 export default async function ClassementsPage() {
-  const [stats, teams] = await Promise.all([getPlayerStats(), getTeams()]);
+  const [stats, teams, teamStats] = await Promise.all([getPlayerStats(), getTeams(), getTeamStats()]);
+
+  // Classement par équipe : 3 pts victoire, 1 pt nul, 0 pt défaite (barème standard)
+  const standings = teams
+    .map((team) => {
+      const s = teamStats.find((ts) => ts.team_id === team.id);
+      const points = (s?.wins ?? 0) * 3 + (s?.draws ?? 0);
+      return { team, stats: s, points };
+    })
+    .sort((a, b) => b.points - a.points || (b.stats?.goal_difference ?? 0) - (a.stats?.goal_difference ?? 0));
 
   const nameOf = (s: (typeof stats)[number]) => s.nickname || s.full_name;
 
@@ -54,7 +64,74 @@ export default async function ClassementsPage() {
 
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-2xl font-bold">Classements automatiques</h1>
+      <h1 className="text-2xl font-bold font-display">Classements</h1>
+
+      {/* Classement par équipe : tableau desktop / cartes mobile */}
+      <section>
+        <h2 className="font-display font-semibold text-lg mb-3">Classement du championnat</h2>
+
+        {/* Vue tableau (desktop) */}
+        <div className="hidden sm:block card overflow-hidden">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-muted-foreground border-b border-border">
+                <th className="py-3 px-4 font-medium">#</th>
+                <th className="py-3 px-4 font-medium">Équipe</th>
+                <th className="py-3 px-3 font-medium text-center">MJ</th>
+                <th className="py-3 px-3 font-medium text-center">V</th>
+                <th className="py-3 px-3 font-medium text-center">N</th>
+                <th className="py-3 px-3 font-medium text-center">D</th>
+                <th className="py-3 px-3 font-medium text-center">BP</th>
+                <th className="py-3 px-3 font-medium text-center">BC</th>
+                <th className="py-3 px-3 font-medium text-center">Diff</th>
+                <th className="py-3 px-4 font-medium text-center">Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              {standings.map(({ team, stats: s, points }, i) => (
+                <tr key={team.id} className="border-b border-border last:border-0">
+                  <td className="py-3 px-4 font-medium">{i + 1}</td>
+                  <td className="py-3 px-4"><TeamBadge team={team} size={24} /></td>
+                  <td className="py-3 px-3 text-center">{s?.matches_played ?? 0}</td>
+                  <td className="py-3 px-3 text-center">{s?.wins ?? 0}</td>
+                  <td className="py-3 px-3 text-center">{s?.draws ?? 0}</td>
+                  <td className="py-3 px-3 text-center">{s?.losses ?? 0}</td>
+                  <td className="py-3 px-3 text-center">{s?.goals_scored ?? 0}</td>
+                  <td className="py-3 px-3 text-center">{s?.goals_conceded ?? 0}</td>
+                  <td className="py-3 px-3 text-center">{s?.goal_difference ?? 0}</td>
+                  <td className="py-3 px-4 text-center font-bold">{points}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Vue cartes (mobile) */}
+        <div className="sm:hidden flex flex-col gap-3">
+          {standings.map(({ team, stats: s, points }, i) => (
+            <div key={team.id} className="card p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="flex items-center gap-2 font-semibold">
+                  <span className="text-muted-foreground text-sm">#{i + 1}</span>
+                  <TeamBadge team={team} size={28} />
+                </span>
+                <span className="score-numeral text-xl">{points} <span className="text-xs font-normal text-muted-foreground">PTS</span></span>
+              </div>
+              <div className="grid grid-cols-4 gap-2 text-center text-xs">
+                <div><p className="text-muted-foreground">MJ</p><p className="font-semibold text-sm">{s?.matches_played ?? 0}</p></div>
+                <div><p className="text-muted-foreground">V</p><p className="font-semibold text-sm">{s?.wins ?? 0}</p></div>
+                <div><p className="text-muted-foreground">N</p><p className="font-semibold text-sm">{s?.draws ?? 0}</p></div>
+                <div><p className="text-muted-foreground">D</p><p className="font-semibold text-sm">{s?.losses ?? 0}</p></div>
+              </div>
+              <div className="grid grid-cols-3 gap-2 text-center text-xs mt-2">
+                <div><p className="text-muted-foreground">BP</p><p className="font-semibold text-sm">{s?.goals_scored ?? 0}</p></div>
+                <div><p className="text-muted-foreground">BC</p><p className="font-semibold text-sm">{s?.goals_conceded ?? 0}</p></div>
+                <div><p className="text-muted-foreground">Diff</p><p className="font-semibold text-sm">{s?.goal_difference ?? 0}</p></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <div className="grid md:grid-cols-2 gap-6">
         <Ranking title="⚽ Meilleur buteur" players={byGoals} metric="buts" />
@@ -67,11 +144,11 @@ export default async function ClassementsPage() {
 
       <div className="grid md:grid-cols-2 gap-6">
         <div className="card p-5">
-          <h2 className="font-semibold mb-2">Top buteurs</h2>
+          <h2 className="font-display font-semibold mb-2">Top buteurs</h2>
           <TopPlayersBarChart data={byGoals.slice(0, 8)} label="Buts" />
         </div>
         <div className="card p-5">
-          <h2 className="font-semibold mb-2">Répartition des buts par équipe</h2>
+          <h2 className="font-display font-semibold mb-2">Répartition des buts par équipe</h2>
           <GoalsDistributionPie data={goalsPerTeam} />
         </div>
       </div>
