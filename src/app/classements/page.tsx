@@ -1,8 +1,10 @@
+import Image from "next/image";
 import { getPlayerStats, getTeams, getTeamStats } from "@/lib/queries";
 import { TopPlayersBarChart, GoalsDistributionPie } from "@/components/charts/charts";
-import { TeamBadge } from "@/components/ui/team-badge";
 
 export const metadata = { title: "Classements — Tally Carreaux" };
+
+const MEDALS = ["🥇", "🥈", "🥉"];
 
 function Ranking({
   title,
@@ -16,16 +18,16 @@ function Ranking({
   return (
     <section className="card p-5">
       <h2 className="font-display font-semibold mb-3">{title}</h2>
-      <ol className="space-y-2 text-sm">
+      <ol className="space-y-2.5 text-sm">
         {players.slice(0, 5).map((p, i) => (
           <li key={p.name} className="flex justify-between items-center">
-            <span className="flex items-center gap-2">
-              <span className="w-6 h-6 rounded-full bg-muted flex items-center justify-center text-xs font-bold">
-                {i + 1}
+            <span className="flex items-center gap-2.5">
+              <span className="w-7 h-7 rounded-full bg-muted flex items-center justify-center text-sm">
+                {i < 3 ? MEDALS[i] : <span className="text-xs font-bold text-muted-foreground">{i + 1}</span>}
               </span>
-              {p.name}
+              <span className="font-medium">{p.name}</span>
             </span>
-            <span className="font-semibold">{p.value} {metric}</span>
+            <span className="font-bold text-tally">{p.value} <span className="font-normal text-muted-foreground text-xs">{metric}</span></span>
           </li>
         ))}
         {players.length === 0 && <p className="text-muted-foreground">Aucune donnée.</p>}
@@ -66,7 +68,7 @@ export default async function ClassementsPage() {
     <div className="flex flex-col gap-8">
       <h1 className="text-2xl font-bold font-display">Classements</h1>
 
-      {/* Classement par équipe : tableau desktop / cartes mobile */}
+      {/* Classement par équipe */}
       <section>
         <h2 className="font-display font-semibold text-lg mb-3">Classement du championnat</h2>
 
@@ -74,7 +76,7 @@ export default async function ClassementsPage() {
         <div className="hidden sm:block card overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-muted-foreground border-b border-border">
+              <tr className="text-left text-muted-foreground border-b border-border bg-muted/50">
                 <th className="py-3 px-4 font-medium">#</th>
                 <th className="py-3 px-4 font-medium">Équipe</th>
                 <th className="py-3 px-3 font-medium text-center">MJ</th>
@@ -90,16 +92,41 @@ export default async function ClassementsPage() {
             <tbody>
               {standings.map(({ team, stats: s, points }, i) => (
                 <tr key={team.id} className="border-b border-border last:border-0">
-                  <td className="py-3 px-4 font-medium">{i + 1}</td>
-                  <td className="py-3 px-4"><TeamBadge team={team} size={24} /></td>
+                  <td className="py-3 px-4">
+                    <span
+                      className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                      style={{ backgroundColor: i === 0 ? "#F59E0B" : team.primary_color }}
+                    >
+                      {i + 1}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4">
+                    <span className="flex items-center gap-2 font-semibold">
+                      {team.logo_url ? (
+                        <Image src={team.logo_url} alt={team.name} width={24} height={24} className="rounded-full object-cover" />
+                      ) : (
+                        <span className="w-6 h-6 rounded-full" style={{ backgroundColor: team.primary_color }} />
+                      )}
+                      {team.name}
+                    </span>
+                  </td>
                   <td className="py-3 px-3 text-center">{s?.matches_played ?? 0}</td>
                   <td className="py-3 px-3 text-center">{s?.wins ?? 0}</td>
                   <td className="py-3 px-3 text-center">{s?.draws ?? 0}</td>
                   <td className="py-3 px-3 text-center">{s?.losses ?? 0}</td>
                   <td className="py-3 px-3 text-center">{s?.goals_scored ?? 0}</td>
                   <td className="py-3 px-3 text-center">{s?.goals_conceded ?? 0}</td>
-                  <td className="py-3 px-3 text-center">{s?.goal_difference ?? 0}</td>
-                  <td className="py-3 px-4 text-center font-bold">{points}</td>
+                  <td className="py-3 px-3 text-center font-medium">
+                    {(s?.goal_difference ?? 0) > 0 ? "+" : ""}{s?.goal_difference ?? 0}
+                  </td>
+                  <td className="py-3 px-4 text-center">
+                    <span
+                      className="inline-block px-2.5 py-1 rounded-full font-bold text-white text-xs"
+                      style={{ backgroundColor: team.primary_color }}
+                    >
+                      {points}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -109,24 +136,46 @@ export default async function ClassementsPage() {
         {/* Vue cartes (mobile) */}
         <div className="sm:hidden flex flex-col gap-3">
           {standings.map(({ team, stats: s, points }, i) => (
-            <div key={team.id} className="card p-4">
+            <div
+              key={team.id}
+              className="card p-4 relative overflow-hidden"
+              style={{ borderLeftWidth: 4, borderLeftColor: team.primary_color }}
+            >
               <div className="flex items-center justify-between mb-3">
-                <span className="flex items-center gap-2 font-semibold">
-                  <span className="text-muted-foreground text-sm">#{i + 1}</span>
-                  <TeamBadge team={team} size={28} />
+                <span className="flex items-center gap-2.5">
+                  <span
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                    style={{ backgroundColor: i === 0 ? "#F59E0B" : team.primary_color }}
+                  >
+                    {i === 0 ? "🥇" : i + 1}
+                  </span>
+                  {team.logo_url ? (
+                    <Image src={team.logo_url} alt={team.name} width={32} height={32} className="rounded-full object-cover" />
+                  ) : (
+                    <span className="w-8 h-8 rounded-full shrink-0" style={{ backgroundColor: team.primary_color }} />
+                  )}
+                  <span className="font-semibold">{team.name}</span>
                 </span>
-                <span className="score-numeral text-xl">{points} <span className="text-xs font-normal text-muted-foreground">PTS</span></span>
+                <span
+                  className="score-numeral text-lg text-white px-3 py-1 rounded-full shrink-0"
+                  style={{ backgroundColor: team.primary_color }}
+                >
+                  {points} <span className="text-[10px] font-normal">PTS</span>
+                </span>
               </div>
-              <div className="grid grid-cols-4 gap-2 text-center text-xs">
-                <div><p className="text-muted-foreground">MJ</p><p className="font-semibold text-sm">{s?.matches_played ?? 0}</p></div>
-                <div><p className="text-muted-foreground">V</p><p className="font-semibold text-sm">{s?.wins ?? 0}</p></div>
-                <div><p className="text-muted-foreground">N</p><p className="font-semibold text-sm">{s?.draws ?? 0}</p></div>
-                <div><p className="text-muted-foreground">D</p><p className="font-semibold text-sm">{s?.losses ?? 0}</p></div>
+              <div className="grid grid-cols-4 gap-2 text-center text-xs bg-muted rounded-xl py-2.5">
+                <div><p className="text-muted-foreground">MJ</p><p className="font-bold text-sm">{s?.matches_played ?? 0}</p></div>
+                <div><p className="text-muted-foreground">V</p><p className="font-bold text-sm">{s?.wins ?? 0}</p></div>
+                <div><p className="text-muted-foreground">N</p><p className="font-bold text-sm">{s?.draws ?? 0}</p></div>
+                <div><p className="text-muted-foreground">D</p><p className="font-bold text-sm">{s?.losses ?? 0}</p></div>
               </div>
-              <div className="grid grid-cols-3 gap-2 text-center text-xs mt-2">
-                <div><p className="text-muted-foreground">BP</p><p className="font-semibold text-sm">{s?.goals_scored ?? 0}</p></div>
-                <div><p className="text-muted-foreground">BC</p><p className="font-semibold text-sm">{s?.goals_conceded ?? 0}</p></div>
-                <div><p className="text-muted-foreground">Diff</p><p className="font-semibold text-sm">{s?.goal_difference ?? 0}</p></div>
+              <div className="grid grid-cols-3 gap-2 text-center text-xs mt-2 bg-muted rounded-xl py-2.5">
+                <div><p className="text-muted-foreground">BP</p><p className="font-bold text-sm">{s?.goals_scored ?? 0}</p></div>
+                <div><p className="text-muted-foreground">BC</p><p className="font-bold text-sm">{s?.goals_conceded ?? 0}</p></div>
+                <div>
+                  <p className="text-muted-foreground">Diff</p>
+                  <p className="font-bold text-sm">{(s?.goal_difference ?? 0) > 0 ? "+" : ""}{s?.goal_difference ?? 0}</p>
+                </div>
               </div>
             </div>
           ))}
