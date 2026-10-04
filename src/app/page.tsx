@@ -1,3 +1,4 @@
+import { OctobreRoseBanner } from '@/components/home/octobre-rose-banner';
 import Link from "next/link";
 import { Goal as GoalIcon, Calendar, ArrowRight } from "lucide-react";
 import { StatCard } from "@/components/ui/stat-card";
@@ -45,6 +46,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <OctobreRoseBanner />
       {/* Hero façon app sportive premium : dégradé sombre aux couleurs des équipes,
           gros score lumineux, effet "glow" discret derrière les badges. */}
       <section
