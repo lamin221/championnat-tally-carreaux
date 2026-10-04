@@ -1,3 +1,4 @@
+import { SportHero } from '@/components/home/sport-hero';
 import { OctobreRoseBanner } from '@/components/home/octobre-rose-banner';
 import Link from "next/link";
 import { Goal as GoalIcon, Calendar, ArrowRight } from "lucide-react";
@@ -49,6 +50,10 @@ export default async function DashboardPage() {
       <OctobreRoseBanner />
       {/* Hero façon app sportive premium : dégradé sombre aux couleurs des équipes,
           gros score lumineux, effet "glow" discret derrière les badges. */}
+          <SportHero
+  imageSrc="/images/hero-match.jpg"
+  imageAlt="Joueur du championnat Tally Carreaux en action"
+/>
       <section
         className="relative overflow-hidden rounded-3xl px-6 py-8 sm:py-10 text-white animate-fade-in"
         style={{
