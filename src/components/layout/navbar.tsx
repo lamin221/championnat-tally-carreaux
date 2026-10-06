@@ -23,12 +23,12 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-30 backdrop-blur-lg bg-background/80 border-b border-border">
       <nav className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-display font-bold text-lg tracking-tight">
-          <Trophy className="text-tally" size={22} />
-          <span>
-            <span className="text-tally">Tally</span> <span className="text-carreaux">Carreaux</span>
-          </span>
-        </Link>
+        <Link href="/" className="group flex items-center gap-2 text-lg tracking-tight">
+  <Trophy className="text-tally transition-transform duration-300 group-hover:rotate-[15deg]" size={22} />
+  <span className="font-body italic font-medium tracking-wide transition-all duration-300 group-hover:tracking-wider">
+    <span className="text-tally">Tally</span> <span className="text-carreaux">Carreaux</span>
+  </span>
+</Link>
 
         <div className="hidden lg:flex items-center gap-1">
           {LINKS.map((link) => (
