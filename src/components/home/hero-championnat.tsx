@@ -97,7 +97,7 @@ export function HeroChampionnat({
         </div>
 
         {/* --- colonne photo --- */}
-        <div className="relative hidden min-h-[360px] lg:block">
+           <div className="relative min-h-[220px] sm:min-h-[300px] lg:min-h-[360px]">
           <div className="absolute inset-4 overflow-hidden rounded-[32px]">
             <Image src={imageSrc} alt={imageAlt} fill className="object-cover" priority />
           </div>

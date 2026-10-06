@@ -126,7 +126,7 @@ export function OctobreRoseBanner({
           onClick={(e) => e.stopPropagation()}
           className={`${styles.cta} mt-5 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#c23574] to-[#ec5c96] px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:brightness-105 transition`}
         >
-          En savoir plus →
+          REJOUER →
         </a>
         <p className={`${styles.mention} mt-4 text-[11px] uppercase tracking-[2px] text-[#c23574] dark:text-[#f481b4]`}>
           Sensibilisation · Prévention · Soutien
