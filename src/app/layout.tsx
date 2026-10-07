@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Oswald, Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/layout/navbar";
 import { MobileTabBar } from "@/components/layout/mobile-tab-bar";
+import { PwaRegister } from "@/components/pwa-register";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -30,6 +31,22 @@ export const metadata: Metadata = {
     description: "Suivez tous les matchs, stats et records du championnat.",
     type: "website",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Tally Carreaux",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0A0F1C",
 };
 
 export default function RootLayout({
@@ -49,6 +66,7 @@ export default function RootLayout({
           <MobileTabBar />
           <Toaster richColors position="top-right" />
           <Analytics />
+          <PwaRegister />
         </ThemeProvider>
       </body>
     </html>
