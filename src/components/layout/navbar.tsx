@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Trophy } from "lucide-react";
+import Image from "next/image";
 import { ThemeToggle } from "./theme-toggle";
 import { clsx } from "clsx";
 
@@ -24,8 +24,15 @@ export function Navbar() {
     <header className="sticky top-0 z-30 backdrop-blur-lg bg-background/80 border-b border-border">
       <nav className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="group flex items-center gap-2 text-lg tracking-tight">
-  <Trophy className="text-tally transition-transform duration-300 group-hover:rotate-[15deg]" size={22} />
-  <span className="font-body italic font-medium tracking-wide transition-all duration-300 group-hover:tracking-wider">
+  <Image
+    src="/images/logo-medaillon.png"
+    alt="Logo Championnat Tally Carreaux"
+    width={36}
+    height={36}
+    className="rounded-full transition-transform duration-300 group-hover:rotate-[15deg]"
+    priority
+  />
+  <span className="font-body italic font-semibold text-xl tracking-wide transition-all duration-300 group-hover:tracking-wider">
     <span className="text-tally">Tally</span> <span className="text-carreaux">Carreaux</span>
   </span>
 </Link>
