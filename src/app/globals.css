@@ -97,3 +97,146 @@ h1, h2, h3 {
 }
 .animate-fade-in { animation: fadeIn 0.4s ease-out; }
 .animate-slide-up { animation: slideUp 0.35s ease-out; }
+
+/* ==========================================================================
+   Page d'accueil — animations et effets
+   ========================================================================== */
+
+/* Texture "carreaux" discrète (clin d'œil au nom du championnat) */
+.bg-carreaux-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+  mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+}
+
+/* Entrée en cascade du hero */
+@keyframes heroIn {
+  from { opacity: 0; transform: translateY(26px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero-in {
+  opacity: 0;
+  animation: heroIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Apparition au scroll (composant Reveal) */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--d, 0ms);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Flottement, orbes lumineux, zoom lent sur la photo */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-10px); }
+}
+.animate-float { animation: floatY 6s ease-in-out infinite; }
+
+@keyframes orb {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%      { transform: translate(34px, -24px) scale(1.18); }
+}
+.animate-orb { animation: orb 14s ease-in-out infinite; }
+
+@keyframes kenburns {
+  from { transform: scale(1); }
+  to   { transform: scale(1.09); }
+}
+.animate-kenburns { animation: kenburns 16s ease-in-out infinite alternate; }
+
+/* Reflet qui traverse le titre */
+@keyframes shineText {
+  to { background-position: 200% center; }
+}
+.text-shine {
+  background-size: 200% auto;
+  animation: shineText 5s linear infinite;
+}
+
+/* Trait doré qui se déploie sous le titre */
+@keyframes growX {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.animate-grow-x {
+  transform-origin: left;
+  animation: growX 1s 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Bandeau défilant */
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 38s linear infinite; }
+
+/* Point lumineux "en cours" */
+@keyframes pulseDot {
+  0%   { box-shadow: 0 0 0 0 rgb(250 204 21 / 0.65); }
+  100% { box-shadow: 0 0 0 10px rgb(250 204 21 / 0); }
+}
+.pulse-dot { animation: pulseDot 1.8s ease-out infinite; }
+
+/* Barres de comparaison qui se remplissent */
+.bar-grow {
+  transform: scaleX(0);
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: var(--d, 0ms);
+}
+.is-visible .bar-grow { transform: scaleX(1); }
+
+/* Pastilles de forme qui "popent" */
+@keyframes pop {
+  0%   { transform: scale(0); }
+  70%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+.pop-in { transform: scale(0); }
+.is-visible .pop-in {
+  animation: pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+
+/* Chiffres du compte à rebours */
+@keyframes tick {
+  from { opacity: 0; transform: translateY(-35%); }
+  to   { opacity: 1; transform: none; }
+}
+.animate-tick { animation: tick 0.35s ease-out; }
+
+/* Reflet balayant un bouton au survol */
+.btn-sheen { position: relative; overflow: hidden; }
+.btn-sheen::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.35) 50%, transparent 70%);
+  transform: translateX(-120%);
+}
+.btn-sheen:hover::after {
+  transform: translateX(120%);
+  transition: transform 0.8s ease;
+}
+
+/* Accessibilité : on coupe tout mouvement si l'utilisateur le demande */
+@media (prefers-reduced-motion: reduce) {
+  .hero-in, .reveal, .pop-in, .bar-grow {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+  .animate-float, .animate-orb, .animate-kenburns, .text-shine,
+  .animate-grow-x, .animate-marquee, .pulse-dot, .animate-tick {
+    animation: none !important;
+  }
+}
