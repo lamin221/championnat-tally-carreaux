@@ -22,6 +22,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://championnat-tally-carreaux.vercel.app"),
   title: "Championnat Tally Carreaux",
   description:
     "Plateforme officielle du championnat de football Tally Carreaux : historique des matchs, statistiques des joueurs et des équipes, classements et records en temps réel.",
@@ -30,6 +31,11 @@ export const metadata: Metadata = {
     title: "Championnat Tally Carreaux",
     description: "Suivez tous les matchs, stats et records du championnat.",
     type: "website",
+    locale: "fr_FR",
+    siteName: "Championnat Tally Carreaux",
+  },
+  twitter: {
+    card: "summary_large_image",
   },
   appleWebApp: {
     capable: true,

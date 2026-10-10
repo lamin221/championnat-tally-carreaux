@@ -1,5 +1,9 @@
+import { Trophy, Goal, Handshake, ShieldAlert, Flame, Medal } from "lucide-react";
 import { getRecords, getTeams, getPlayers } from "@/lib/queries";
-import { Trophy, Goal, Handshake, ShieldAlert, Flame } from "lucide-react";
+import { PageHeader } from "@/components/ui/page-header";
+import { RecordCard } from "@/components/ui/record-card";
+import { Reveal } from "@/components/home/reveal";
+import { CountUp } from "@/components/home/count-up";
 
 export const metadata = { title: "Records — Tally Carreaux" };
 
@@ -8,59 +12,88 @@ export default async function RecordsPage() {
   const findTeam = (id?: string) => teams.find((t) => t.id === id)?.name ?? "—";
   const findPlayer = (id?: string) => players.find((p) => p.id === id)?.full_name ?? "—";
 
-  const items = [
-    {
-      icon: Trophy,
-      title: "Plus large victoire",
-      value: records.biggestWin
-        ? `${findTeam(records.biggestWin.home_team_id)} ${records.biggestWin.home_score} - ${records.biggestWin.away_score} ${findTeam(records.biggestWin.away_team_id)}`
-        : "Aucune donnée",
-    },
-    {
-      icon: Goal,
-      title: "Match avec le plus de buts",
-      value: records.mostGoals
-        ? `${findTeam(records.mostGoals.home_team_id)} ${records.mostGoals.home_score} - ${records.mostGoals.away_score} ${findTeam(records.mostGoals.away_team_id)} (${records.mostGoals.total_goals} buts)`
-        : "Aucune donnée",
-    },
-    {
-      icon: Flame,
-      title: "Le plus de buts dans un seul match (joueur)",
-      value: records.playerGoals
-        ? `${findPlayer(records.playerGoals.player_id)} — ${records.playerGoals.goals_in_match} buts`
-        : "Aucune donnée",
-    },
-    {
-      icon: Handshake,
-      title: "Le plus de passes dans un seul match (joueur)",
-      value: records.playerAssists
-        ? `${findPlayer(records.playerAssists.player_id)} — ${records.playerAssists.assists_in_match} passes`
-        : "Aucune donnée",
-    },
-    {
-      icon: ShieldAlert,
-      title: "Le plus grand nombre de sanctions dans un match",
-      value: records.mostSanctions
-        ? `${records.mostSanctions.sanctions_count} sanctions`
-        : "Aucune donnée",
-    },
-  ];
+  const { biggestWin, mostGoals, playerGoals, playerAssists, mostSanctions } = records;
+  const nodata = "Aucune donnée pour le moment";
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-bold">Records du championnat</h1>
-      <div className="grid md:grid-cols-2 gap-4">
-        {items.map((item) => (
-          <div key={item.title} className="card p-5 flex items-start gap-4">
-            <item.icon className="text-tally shrink-0" size={28} />
-            <div>
-              <p className="text-sm text-foreground/60">{item.title}</p>
-              <p className="font-semibold mt-1">{item.value}</p>
-            </div>
-          </div>
-        ))}
+    <div className="flex flex-col gap-8 sm:gap-10">
+      <PageHeader
+        icon={Medal}
+        title="Records"
+        subtitle="Les performances qui ont marqué l'histoire du championnat."
+      />
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <Reveal className="h-full md:col-span-2">
+          <RecordCard
+            featured
+            icon={Trophy}
+            title="Plus large victoire"
+            big={
+              biggestWin ? (
+                <>
+                  <CountUp value={Number(biggestWin.home_score)} />
+                  <span className="text-white/30">–</span>
+                  <CountUp value={Number(biggestWin.away_score)} />
+                </>
+              ) : (
+                "—"
+              )
+            }
+            caption={
+              biggestWin
+                ? `${findTeam(biggestWin.home_team_id)} contre ${findTeam(biggestWin.away_team_id)}`
+                : nodata
+            }
+          />
+        </Reveal>
+
+        <Reveal delay={80} className="h-full">
+          <RecordCard
+            icon={Goal}
+            title="Match avec le plus de buts"
+            big={mostGoals ? <CountUp value={Number(mostGoals.total_goals)} /> : "—"}
+            unit={mostGoals ? "buts" : undefined}
+            caption={
+              mostGoals
+                ? `${findTeam(mostGoals.home_team_id)} ${mostGoals.home_score} – ${mostGoals.away_score} ${findTeam(mostGoals.away_team_id)}`
+                : nodata
+            }
+          />
+        </Reveal>
+
+        <Reveal delay={160} className="h-full">
+          <RecordCard
+            icon={Flame}
+            title="Le plus de buts dans un seul match (joueur)"
+            big={playerGoals ? <CountUp value={Number(playerGoals.goals_in_match)} /> : "—"}
+            unit={playerGoals ? "buts" : undefined}
+            caption={playerGoals ? findPlayer(playerGoals.player_id) : nodata}
+          />
+        </Reveal>
+
+        <Reveal delay={80} className="h-full">
+          <RecordCard
+            icon={Handshake}
+            title="Le plus de passes décisives dans un seul match (joueur)"
+            big={playerAssists ? <CountUp value={Number(playerAssists.assists_in_match)} /> : "—"}
+            unit={playerAssists ? "passes" : undefined}
+            caption={playerAssists ? findPlayer(playerAssists.player_id) : nodata}
+          />
+        </Reveal>
+
+        <Reveal delay={160} className="h-full">
+          <RecordCard
+            icon={ShieldAlert}
+            title="Le plus grand nombre de sanctions dans un match"
+            big={mostSanctions ? <CountUp value={Number(mostSanctions.sanctions_count)} /> : "—"}
+            unit={mostSanctions ? "sanctions" : undefined}
+            caption={mostSanctions ? undefined : nodata}
+          />
+        </Reveal>
       </div>
-      <p className="text-xs text-foreground/50">
+
+      <p className="text-xs text-muted-foreground">
         Note : la « plus longue série de victoires » se calcule à partir de l&apos;historique complet des matchs
         et s&apos;affine à mesure que le championnat progresse.
       </p>

@@ -9,6 +9,7 @@ import { clsx } from "clsx";
 const LINKS = [
   { href: "/", label: "Accueil" },
   { href: "/matchs", label: "Matchs" },
+  { href: "/equipes", label: "Équipes" },
   { href: "/joueurs", label: "Joueurs" },
   { href: "/classements", label: "Classements" },
   { href: "/records", label: "Records" },

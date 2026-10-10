@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Swords } from "lucide-react";
 import { TeamBadge } from "@/components/ui/team-badge";
 import { CountUp } from "./count-up";
@@ -10,14 +11,17 @@ import type { Team, TeamStats } from "@/types/database";
 
 function Crest({ team }: { team: Team }) {
   return (
-    <div className="flex min-w-0 flex-1 flex-col items-center gap-3 text-center">
-      <div className="rounded-full bg-white/10 p-1.5 ring-2 ring-white/25 shadow-xl">
+    <Link
+      href={`/equipes/${team.id}`}
+      className="group flex min-w-0 flex-1 flex-col items-center gap-3 text-center"
+    >
+      <div className="rounded-full bg-white/10 p-1.5 ring-2 ring-white/25 shadow-xl transition duration-300 group-hover:scale-105 group-hover:ring-yellow-300/70">
         <TeamBadge team={team} size={64} showName={false} />
       </div>
-      <span className="w-full truncate font-display text-base font-semibold uppercase tracking-wide sm:text-xl">
+      <span className="w-full truncate font-display text-base font-semibold uppercase tracking-wide transition group-hover:text-yellow-300 sm:text-xl">
         {team.name}
       </span>
-    </div>
+    </Link>
   );
 }
 

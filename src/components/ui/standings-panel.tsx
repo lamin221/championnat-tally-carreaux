@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Crown } from "lucide-react";
 import { TeamBadge } from "@/components/ui/team-badge";
 import { CountUp } from "@/components/home/count-up";
@@ -55,7 +56,9 @@ export function StandingsPanel({ standings }: { standings: Standing[] }) {
                     <span className="rounded-full bg-white/10 p-0.5 ring-1 ring-white/20">
                       <TeamBadge team={team} size={30} showName={false} />
                     </span>
-                    {team.name}
+                    <Link href={`/equipes/${team.id}`} className="transition hover:text-yellow-300">
+                      {team.name}
+                    </Link>
                   </span>
                 </td>
                 <td className="px-3 py-4 text-center text-white/80">{s?.matches_played ?? 0}</td>
@@ -86,7 +89,7 @@ export function StandingsPanel({ standings }: { standings: Standing[] }) {
                 <span className="rounded-full bg-white/10 p-0.5 ring-1 ring-white/20">
                   <TeamBadge team={team} size={32} showName={false} />
                 </span>
-                <span className="truncate font-semibold">{team.name}</span>
+                <Link href={`/equipes/${team.id}`} className="truncate font-semibold">{team.name}</Link>
               </span>
               <span className="shrink-0 text-right">
                 <span className="score-numeral text-3xl text-yellow-300">
