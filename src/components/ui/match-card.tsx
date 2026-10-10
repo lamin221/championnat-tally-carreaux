@@ -37,6 +37,7 @@ export function MatchCard({
   awayTeam: Team;
 }) {
   const finished = match.status === "termine";
+  const showScore = finished || match.status === "en_cours";
   const hs = Number(match.home_score ?? 0);
   const as = Number(match.away_score ?? 0);
   const status = STATUS[match.status] ?? STATUS.a_venir;
@@ -59,7 +60,7 @@ export function MatchCard({
 
       <div className="relative flex items-center justify-between gap-2">
         <Crest team={homeTeam} win={finished && hs > as} />
-        {finished ? (
+        {showScore ? (
           <span className="score-numeral shrink-0 px-1 text-4xl leading-none">
             <span className={hs > as ? "text-yellow-300" : ""}>{hs}</span>
             <span className="mx-1.5 text-white/30">–</span>

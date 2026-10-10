@@ -69,6 +69,17 @@ export async function getMatchDetails(matchId: string) {
   };
 }
 
+/** Matchs actuellement en cours (affichés en direct sur le site). */
+export async function getLiveMatches(): Promise<Match[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("matches")
+    .select("*")
+    .eq("status", "en_cours")
+    .order("match_date", { ascending: false });
+  return (data ?? []) as Match[];
+}
+
 export async function getLastAndNextMatch() {
   const supabase = await createClient();
   const [last, next] = await Promise.all([

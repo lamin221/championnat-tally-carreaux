@@ -8,20 +8,24 @@ import { VersusBoard } from "@/components/home/versus-board";
 import { NextMatchPanel, LastMatchPanel } from "@/components/home/match-panels";
 import { FormGuide } from "@/components/home/form-guide";
 import { ExploreGrid } from "@/components/home/explore-grid";
+import { LiveBanner } from "@/components/home/live-banner";
+import { LiveRefresher } from "@/components/live/live-refresher";
 import {
   getTeams,
   getTeamStats,
   getLastAndNextMatch,
+  getLiveMatches,
   getTeamRecentForm,
   getHeadToHead,
 } from "@/lib/queries";
 
 export default async function DashboardPage() {
-  const [teams, teamStats, { lastMatch, nextMatch }, h2h] = await Promise.all([
+  const [teams, teamStats, { lastMatch, nextMatch }, h2h, liveMatches] = await Promise.all([
     getTeams(),
     getTeamStats(),
     getLastAndNextMatch(),
     getHeadToHead(),
+    getLiveMatches(),
   ]);
 
   const [teamA, teamB] = teams;
@@ -41,6 +45,10 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10">
+      {/* Direct : écoute en permanence, rechargement toutes les 20 s seulement si un match est en cours */}
+      <LiveRefresher sondage={liveMatches.length > 0} />
+      {liveMatches.length > 0 && <LiveBanner matches={liveMatches} teams={teams} />}
+
       <OctobreRoseBanner />
 
       <HeroChampionnat

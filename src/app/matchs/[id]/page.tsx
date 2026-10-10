@@ -11,6 +11,9 @@ import { ShareMatchButton } from "@/components/ui/share-match-button";
 import { Reveal } from "@/components/home/reveal";
 import { CountUp } from "@/components/home/count-up";
 import { Countdown } from "@/components/home/countdown";
+import { LiveRefresher } from "@/components/live/live-refresher";
+import { LiveNumber } from "@/components/live/live-number";
+import { LiveBadge } from "@/components/live/live-badge";
 import type { Player, Team } from "@/types/database";
 
 type Evenement = {
@@ -93,7 +96,9 @@ export async function generateMetadata({
 
   const date = format(parseISO(match.match_date), "d MMMM yyyy", { locale: fr });
   const title =
-    match.status === "termine"
+    match.status === "en_cours"
+      ? `EN DIRECT : ${home.name} ${match.home_score} - ${match.away_score} ${away.name}`
+      : match.status === "termine"
       ? `${home.name} ${match.home_score} - ${match.away_score} ${away.name}`
       : `${home.name} vs ${away.name}`;
   const description =
@@ -130,6 +135,8 @@ export default async function MatchDetailPage({
 
   const finished = match.status === "termine";
   const upcoming = match.status === "a_venir";
+  const live = match.status === "en_cours";
+  const showScore = finished || live;
   const hs = Number(match.home_score ?? 0);
   const as = Number(match.away_score ?? 0);
   const heure = (match.match_time ?? "00:00").slice(0, 5);
@@ -169,7 +176,9 @@ export default async function MatchDetailPage({
   evenements.sort((a, b) => (a.minute ?? 999) - (b.minute ?? 999));
 
   const dateLabel = format(parseISO(match.match_date), "EEEE d MMMM yyyy", { locale: fr });
-  const shareText = finished
+  const shareText = live
+    ? `🔴 EN DIRECT : ${homeTeam.name} ${match.home_score} - ${match.away_score} ${awayTeam.name} — Championnat Tally Carreaux`
+    : finished
     ? `⚽ ${homeTeam.name} ${match.home_score} - ${match.away_score} ${awayTeam.name} — Championnat Tally Carreaux`
     : `📅 Prochain match : ${homeTeam.name} vs ${awayTeam.name} — Championnat Tally Carreaux`;
 
@@ -183,6 +192,9 @@ export default async function MatchDetailPage({
         Tous les matchs
       </Link>
 
+      {/* Direct : met la page à jour toute seule (buts, sanctions, score) */}
+      {(upcoming || live) && <LiveRefresher matchId={match.id} sondage={live} annoncerButs />}
+
       {/* Tableau d'affichage */}
       <section className="hero-in relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#060b1f] via-[#0a1440] to-[#060b1f] p-6 text-white shadow-2xl shadow-blue-950/40 sm:p-10">
         <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-yellow-400/70 to-transparent" />
@@ -191,6 +203,7 @@ export default async function MatchDetailPage({
         <div aria-hidden className="bg-carreaux-grid pointer-events-none absolute inset-0" />
 
         <div className="relative flex flex-col items-center gap-2 text-center text-sm text-white/65">
+          {live && <LiveBadge className="mb-1" />}
           <span className="capitalize">{dateLabel}</span>
           <span className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs">
             <span className="inline-flex items-center gap-1.5">
@@ -204,11 +217,15 @@ export default async function MatchDetailPage({
 
         <div className="relative mt-8 flex items-center justify-between gap-3">
           <Crest team={homeTeam} win={finished && hs > as} />
-          {finished ? (
+          {showScore ? (
             <div className="score-numeral flex shrink-0 items-center gap-2 text-6xl leading-none sm:gap-4 sm:text-8xl">
-              <span className={hs > as ? "text-yellow-300" : ""}><CountUp value={hs} /></span>
+              <span className={hs > as ? "text-yellow-300" : ""}>
+                {live ? <LiveNumber value={hs} /> : <CountUp value={hs} />}
+              </span>
               <span className="text-white/25">–</span>
-              <span className={as > hs ? "text-yellow-300" : ""}><CountUp value={as} /></span>
+              <span className={as > hs ? "text-yellow-300" : ""}>
+                {live ? <LiveNumber value={as} /> : <CountUp value={as} />}
+              </span>
             </div>
           ) : (
             <span className="font-display shrink-0 px-2 text-3xl text-white/35">VS</span>

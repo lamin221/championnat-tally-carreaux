@@ -240,3 +240,14 @@ h1, h2, h3 {
     animation: none !important;
   }
 }
+
+/* Match en direct : le chiffre du score grossit et brille quand un but est marqué */
+@keyframes goalFlash {
+  0%   { transform: scale(1); text-shadow: 0 0 0 rgb(250 204 21 / 0); }
+  25%  { transform: scale(1.6); text-shadow: 0 0 36px rgb(250 204 21 / 0.95); color: rgb(253 224 71); }
+  100% { transform: scale(1); text-shadow: 0 0 0 rgb(250 204 21 / 0); }
+}
+.animate-goal { animation: goalFlash 1.6s cubic-bezier(0.22, 1, 0.36, 1); }
+@media (prefers-reduced-motion: reduce) {
+  .animate-goal { animation: none !important; }
+}

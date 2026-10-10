@@ -11,6 +11,7 @@ import {
   Goal as GoalIcon,
   Minus,
   PartyPopper,
+  Radio,
   Plus,
   Repeat,
   Share2,
@@ -330,6 +331,21 @@ export default function SaisieRapidePage() {
     setSanctions((prev) => prev.filter((s) => s.id !== id));
   }
 
+  // --- Direct ---------------------------------------------------------------
+  // Passe le match « en cours » : le site l'affiche aussitôt en direct chez les visiteurs.
+  async function lancerDirect() {
+    if (!match) return;
+    setOccupe(true);
+    const { error } = await supabase
+      .from("matches")
+      .update({ status: "en_cours", home_score: score.home, away_score: score.away })
+      .eq("id", match.id);
+    setOccupe(false);
+    if (error) return toast.error(`Erreur : ${error.message}`);
+    setMatches((prev) => prev.map((m) => (m.id === match.id ? { ...m, status: "en_cours" } : m)));
+    toast.success("Le match est en direct sur le site !");
+  }
+
   // --- Terminer -------------------------------------------------------------
   async function terminer(publier: boolean) {
     if (!match || !home || !away) return;
@@ -472,6 +488,15 @@ export default function SaisieRapidePage() {
       {/* Tableau de score permanent */}
       {match && home && away && etape > 0 && (
         <div className="sticky top-[4.25rem] z-20 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#060b1f] via-[#0a1440] to-[#060b1f] px-4 py-3 text-white shadow-xl">
+          {match.status === "en_cours" && (
+            <p className="mb-2 flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-red-300">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+              </span>
+              En direct sur le site
+            </p>
+          )}
           <div className="flex items-center justify-between gap-3">
             <span className="min-w-0 flex-1 truncate text-sm font-semibold">{home.name}</span>
             <span className="score-numeral shrink-0 text-3xl leading-none text-yellow-300">
@@ -625,6 +650,15 @@ export default function SaisieRapidePage() {
       {/* ---------------- Étape 2 : buts ---------------- */}
       {etape === 2 && match && home && away && (
         <div className="flex flex-col gap-5">
+          {match.status === "a_venir" && (
+            <button
+              onClick={lancerDirect}
+              disabled={occupe}
+              className="flex min-h-14 items-center justify-center gap-3 rounded-2xl bg-gradient-to-r from-red-600 to-red-500 px-5 text-base font-bold text-white shadow-lg shadow-red-600/30 active:scale-[0.98] disabled:opacity-50"
+            >
+              <Radio size={22} /> Coup d&apos;envoi : lancer le direct
+            </button>
+          )}
           <section className="card flex flex-col gap-4 p-4">
             <h2 className="flex items-center gap-2 font-semibold"><GoalIcon size={18} className="text-yellow-500" /> Ajouter un but</h2>
 

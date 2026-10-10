@@ -51,7 +51,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         logo={logo}
         home={{ nom: home.name, couleur: home.primary_color, logo: logoHome }}
         away={{ nom: away.name, couleur: away.primary_color, logo: logoAway }}
-        finished={match.status === "termine"}
+        finished={match.status === "termine" || match.status === "en_cours"}
         hs={Number(match.home_score ?? 0)}
         as={Number(match.away_score ?? 0)}
         statut={STATUTS[match.status] ?? ""}
