@@ -10,6 +10,7 @@ import { FormGuide } from "@/components/home/form-guide";
 import { ExploreGrid } from "@/components/home/explore-grid";
 import { LiveBanner } from "@/components/home/live-banner";
 import { LiveRefresher } from "@/components/live/live-refresher";
+import { NotifyCard } from "@/components/notifications/notify-card";
 import {
   getTeams,
   getTeamStats,
@@ -59,6 +60,8 @@ export default async function DashboardPage() {
       />
 
       <BrandMarquee />
+
+      <NotifyCard />
 
       {/* Chiffres clés */}
       <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">

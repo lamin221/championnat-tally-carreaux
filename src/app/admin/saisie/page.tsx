@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   ArrowLeft,
   ArrowRight,
+  Bell,
   Check,
   ChevronDown,
   Goal as GoalIcon,
@@ -107,6 +108,7 @@ export default function SaisieRapidePage() {
   const [manuel, setManuel] = useState<{ home: number; away: number } | null>(null);
   const [motm, setMotm] = useState("");
   const [occupe, setOccupe] = useState(false);
+  const [notifier, setNotifier] = useState(true);
   const [termine, setTermine] = useState<{ id: string; texte: string } | null>(null);
 
   // Formulaires
@@ -172,6 +174,7 @@ export default function SaisieRapidePage() {
     setGoals(buts);
     setSanctions((s ?? []) as Sanction[]);
     setMotm(m.man_of_the_match_id ?? "");
+    setNotifier(m.status !== "termine");
 
     // Score enregistré qui ne correspond pas aux buts saisis : on le conserve en mode manuel.
     const h = buts.filter((x) => x.team_id === m.home_team_id).length;
@@ -291,6 +294,11 @@ export default function SaisieRapidePage() {
     synchroniserScore(suite);
     setFormBut({ team: formBut.team, csc: false, scorer: "", assist: "", minute: "" });
     toast.success("But ajouté.");
+    prevenir("goal", {
+      goalId: (data as Goal).id,
+      homeScore: suite.filter((g) => g.team_id === match.home_team_id).length,
+      awayScore: suite.filter((g) => g.team_id === match.away_team_id).length,
+    });
   }
 
   async function supprimerBut(id: string) {
@@ -331,6 +339,28 @@ export default function SaisieRapidePage() {
     setSanctions((prev) => prev.filter((s) => s.id !== id));
   }
 
+  // --- Notifications --------------------------------------------------------
+  // Prévient les abonnés (coup d'envoi, but, fin de match). Un échec n'empêche jamais la saisie.
+  async function prevenir(
+    type: "kickoff" | "goal" | "final",
+    extra: { goalId?: string; homeScore?: number; awayScore?: number; motmId?: string } = {}
+  ) {
+    if (!notifier || !match) return;
+    try {
+      const res = await fetch("/api/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, matchId: match.id, ...extra }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) return toast.error(json.error ?? "Notification non envoyée.");
+      if (json.total === 0) toast("Aucun abonné aux notifications pour l'instant.");
+      else toast.success(`Notification envoyée à ${json.sent} abonné${json.sent > 1 ? "s" : ""}.`);
+    } catch {
+      toast.error("Notification non envoyée.");
+    }
+  }
+
   // --- Direct ---------------------------------------------------------------
   // Passe le match « en cours » : le site l'affiche aussitôt en direct chez les visiteurs.
   async function lancerDirect() {
@@ -344,6 +374,7 @@ export default function SaisieRapidePage() {
     if (error) return toast.error(`Erreur : ${error.message}`);
     setMatches((prev) => prev.map((m) => (m.id === match.id ? { ...m, status: "en_cours" } : m)));
     toast.success("Le match est en direct sur le site !");
+    prevenir("kickoff");
   }
 
   // --- Terminer -------------------------------------------------------------
@@ -362,6 +393,7 @@ export default function SaisieRapidePage() {
     setOccupe(false);
     if (error) return toast.error(`Erreur : ${error.message}`);
     toast.success(publier ? "Résultat publié !" : "Match enregistré (en cours).");
+    if (publier) prevenir("final", { homeScore: score.home, awayScore: score.away, motmId: motm || undefined });
     setMatches((prev) =>
       prev.map((m) =>
         m.id === match.id
@@ -650,6 +682,17 @@ export default function SaisieRapidePage() {
       {/* ---------------- Étape 2 : buts ---------------- */}
       {etape === 2 && match && home && away && (
         <div className="flex flex-col gap-5">
+          <label className="card flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 py-3 text-sm">
+            <span className="flex items-center gap-2 font-medium">
+              <Bell size={16} className="text-yellow-500" /> Notifier les abonnés
+            </span>
+            <input
+              type="checkbox"
+              className="h-5 w-5"
+              checked={notifier}
+              onChange={(e) => setNotifier(e.target.checked)}
+            />
+          </label>
           {match.status === "a_venir" && (
             <button
               onClick={lancerDirect}
@@ -916,6 +959,17 @@ export default function SaisieRapidePage() {
       {/* ---------------- Étape 4 : terminer ---------------- */}
       {etape === 4 && match && home && away && (
         <div className="flex flex-col gap-5">
+          <label className="card flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 py-3 text-sm">
+            <span className="flex items-center gap-2 font-medium">
+              <Bell size={16} className="text-yellow-500" /> Notifier les abonnés
+            </span>
+            <input
+              type="checkbox"
+              className="h-5 w-5"
+              checked={notifier}
+              onChange={(e) => setNotifier(e.target.checked)}
+            />
+          </label>
           <section className="card p-5 text-center">
             <p className="text-sm text-muted-foreground">Résultat final</p>
             <p className="score-numeral mt-2 text-5xl">

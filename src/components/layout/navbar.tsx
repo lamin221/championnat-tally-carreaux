@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import { ThemeToggle } from "./theme-toggle";
+import { NotifyButton } from "@/components/notifications/notify-button";
 import { clsx } from "clsx";
 
 const LINKS = [
@@ -66,7 +67,10 @@ export function Navbar() {
           </a>
         </div>
 
-        <ThemeToggle />
+        <div className="flex items-center gap-1">
+          <NotifyButton />
+          <ThemeToggle />
+        </div>
       </nav>
     </header>
   );
