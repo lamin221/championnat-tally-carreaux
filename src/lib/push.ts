@@ -3,6 +3,18 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { PushPayload } from "./push-messages";
 
 /**
+ * Le « sujet » VAPID doit être une adresse mailto: ou une URL https:.
+ * Si on a saisi une simple adresse e-mail, on ajoute mailto: automatiquement.
+ */
+function normaliserSujet(brut: string | undefined) {
+  const valeur = (brut ?? "").trim();
+  if (!valeur) return "mailto:contact@tally-carreaux.sn";
+  if (/^(mailto:|https:\/\/)/i.test(valeur)) return valeur;
+  if (valeur.includes("@")) return `mailto:${valeur}`;
+  return `mailto:${valeur}`;
+}
+
+/**
  * Envoie une notification à tous les abonnés.
  * Les abonnements expirés (désinstallation, permission retirée) sont supprimés au passage.
  * À appeler avec un client Supabase connecté en administrateur (la liste des abonnés est protégée).
@@ -13,7 +25,7 @@ export async function sendPushToAll(supabase: SupabaseClient, payload: PushPaylo
   if (!publique || !privee) {
     throw new Error("Clés VAPID manquantes : ajoute NEXT_PUBLIC_VAPID_PUBLIC_KEY et VAPID_PRIVATE_KEY.");
   }
-  webpush.setVapidDetails(process.env.VAPID_SUBJECT ?? "mailto:contact@tally-carreaux.sn", publique, privee);
+  webpush.setVapidDetails(normaliserSujet(process.env.VAPID_SUBJECT), publique, privee);
 
   const { data: abonnes, error } = await supabase
     .from("push_subscriptions")
