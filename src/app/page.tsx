@@ -11,6 +11,8 @@ import { ExploreGrid } from "@/components/home/explore-grid";
 import { LiveBanner } from "@/components/home/live-banner";
 import { LiveRefresher } from "@/components/live/live-refresher";
 import { NotifyCard } from "@/components/notifications/notify-card";
+import { PronoTeaser } from "@/components/pronostics/prono-teaser";
+import { matchOuvert } from "@/lib/pronostics";
 import {
   getTeams,
   getTeamStats,
@@ -62,6 +64,14 @@ export default async function DashboardPage() {
       <BrandMarquee />
 
       <NotifyCard />
+
+      {nextMatch && matchOuvert(nextMatch) && findTeam(nextMatch.home_team_id) && findTeam(nextMatch.away_team_id) && (
+        <PronoTeaser
+          match={nextMatch}
+          home={findTeam(nextMatch.home_team_id)!}
+          away={findTeam(nextMatch.away_team_id)!}
+        />
+      )}
 
       {/* Chiffres clés */}
       <section className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">

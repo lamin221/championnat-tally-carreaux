@@ -13,6 +13,7 @@ const TABS = [
 ];
 
 const MORE_LINKS = [
+  { href: "/pronostics", label: "Pronostics" },
   { href: "/equipes", label: "Équipes" },
   { href: "/joueurs", label: "Joueurs" },
   { href: "/records", label: "Records" },

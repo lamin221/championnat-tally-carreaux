@@ -4,7 +4,9 @@ import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ArrowLeft, Clock, MapPin, Star, Goal as GoalIcon, Users, ListOrdered } from "lucide-react";
-import { getMatchById, getMatchDetails, getTeams, getPlayers } from "@/lib/queries";
+import { getMatchById, getMatchDetails, getTeams, getPlayers, getPredictionStats } from "@/lib/queries";
+import { matchOuvert } from "@/lib/pronostics";
+import { PredictionPanel } from "@/components/pronostics/prediction-panel";
 import { TeamBadge } from "@/components/ui/team-badge";
 import { CommentsSection } from "@/components/ui/comments-section";
 import { ShareMatchButton } from "@/components/ui/share-match-button";
@@ -122,10 +124,11 @@ export default async function MatchDetailPage({
   const match = await getMatchById(id);
   if (!match) notFound();
 
-  const [teams, players, details] = await Promise.all([
+  const [teams, players, details, predictionStats] = await Promise.all([
     getTeams(),
     getPlayers(),
     getMatchDetails(id),
+    getPredictionStats(),
   ]);
 
   const homeTeam = teams.find((t) => t.id === match.home_team_id)!;
@@ -258,6 +261,18 @@ export default async function MatchDetailPage({
           />
         </div>
       </section>
+
+      {/* Pronostic : ouvert tant que le match n'a pas commencé */}
+      {matchOuvert(match) && (
+        <Reveal>
+          <section>
+            <h2 className="mb-4 font-display text-xl font-semibold">Ton pronostic</h2>
+            <PredictionPanel
+              items={[{ match, home: homeTeam, away: awayTeam, stats: predictionStats.find((s) => s.match_id === match.id) }]}
+            />
+          </section>
+        </Reveal>
+      )}
 
       {/* Fil du match */}
       <Reveal>

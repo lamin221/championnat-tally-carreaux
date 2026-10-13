@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import type { StatsPronostic, LigneClassement } from "@/lib/pronostics";
 import type {
   Team,
   Player,
@@ -171,4 +172,25 @@ export async function getNews(): Promise<NewsItem[]> {
     .eq("published", true)
     .order("created_at", { ascending: false });
   return data ?? [];
+}
+
+// ------------------------------------------------------------------
+// Pronostics (vues publiques : agrégats uniquement)
+// ------------------------------------------------------------------
+export async function getPredictionStats(): Promise<StatsPronostic[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("prediction_stats").select("*");
+  return (data ?? []) as StatsPronostic[];
+}
+
+export async function getPredictionLeaderboard(): Promise<LigneClassement[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("prediction_leaderboard")
+    .select("*")
+    .order("points", { ascending: false })
+    .order("exact", { ascending: false })
+    .order("played", { ascending: true })
+    .limit(20);
+  return (data ?? []) as LigneClassement[];
 }
