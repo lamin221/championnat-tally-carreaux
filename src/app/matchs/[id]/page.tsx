@@ -4,7 +4,9 @@ import Link from "next/link";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { ArrowLeft, Clock, MapPin, Star, Goal as GoalIcon, Users, ListOrdered } from "lucide-react";
-import { getMatchById, getMatchDetails, getTeams, getPlayers, getPredictionStats } from "@/lib/queries";
+import { getMatchById, getMatchDetails, getTeams, getPlayers, getPredictionStats, getMotmCounts } from "@/lib/queries";
+import { voteOuvert, limiteVote } from "@/lib/vote";
+import { MotmVote } from "@/components/vote/motm-vote";
 import { matchOuvert } from "@/lib/pronostics";
 import { PredictionPanel } from "@/components/pronostics/prediction-panel";
 import { TeamBadge } from "@/components/ui/team-badge";
@@ -124,11 +126,12 @@ export default async function MatchDetailPage({
   const match = await getMatchById(id);
   if (!match) notFound();
 
-  const [teams, players, details, predictionStats] = await Promise.all([
+  const [teams, players, details, predictionStats, motmCounts] = await Promise.all([
     getTeams(),
     getPlayers(),
     getMatchDetails(id),
     getPredictionStats(),
+    getMotmCounts(id),
   ]);
 
   const homeTeam = teams.find((t) => t.id === match.home_team_id)!;
@@ -273,6 +276,37 @@ export default async function MatchDetailPage({
           </section>
         </Reveal>
       )}
+
+      {/* Vote du public pour l'homme du match (matchs terminés) */}
+      {finished && (() => {
+        // Mêmes joueurs que ceux acceptés par la base : la composition du match, sinon les deux effectifs
+        const presents = new Set(details.lineups.map((l) => l.player_id));
+        const votables = players.filter((p) =>
+          presents.size > 0 ? presents.has(p.id) : p.team_id === homeTeam.id || p.team_id === awayTeam.id
+        );
+        return (
+          <Reveal>
+            <div id="vote" className="scroll-mt-24">
+              <MotmVote
+                matchId={match.id}
+                home={homeTeam}
+                away={awayTeam}
+                joueurs={votables.map((p) => ({
+                  id: p.id,
+                  nom: p.nickname || p.full_name,
+                  numero: p.jersey_number,
+                  teamId: p.team_id,
+                  photoUrl: p.photo_url,
+                }))}
+                comptes={Object.fromEntries(motmCounts.map((c) => [c.player_id, c.votes]))}
+                ouvert={voteOuvert(match)}
+                limite={limiteVote(match)}
+                officielId={match.man_of_the_match_id}
+              />
+            </div>
+          </Reveal>
+        );
+      })()}
 
       {/* Fil du match */}
       <Reveal>

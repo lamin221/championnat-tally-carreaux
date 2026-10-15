@@ -12,6 +12,8 @@ import { LiveBanner } from "@/components/home/live-banner";
 import { LiveRefresher } from "@/components/live/live-refresher";
 import { NotifyCard } from "@/components/notifications/notify-card";
 import { PronoTeaser } from "@/components/pronostics/prono-teaser";
+import { MotmTeaser } from "@/components/vote/motm-teaser";
+import { voteOuvert } from "@/lib/vote";
 import { matchOuvert } from "@/lib/pronostics";
 import {
   getTeams,
@@ -64,6 +66,14 @@ export default async function DashboardPage() {
       <BrandMarquee />
 
       <NotifyCard />
+
+      {lastMatch && voteOuvert(lastMatch) && findTeam(lastMatch.home_team_id) && findTeam(lastMatch.away_team_id) && (
+        <MotmTeaser
+          match={lastMatch}
+          home={findTeam(lastMatch.home_team_id)!}
+          away={findTeam(lastMatch.away_team_id)!}
+        />
+      )}
 
       {nextMatch && matchOuvert(nextMatch) && findTeam(nextMatch.home_team_id) && findTeam(nextMatch.away_team_id) && (
         <PronoTeaser

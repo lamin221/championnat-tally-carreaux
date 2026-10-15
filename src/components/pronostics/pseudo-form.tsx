@@ -5,8 +5,12 @@ import { UserRound } from "lucide-react";
 import { toast } from "sonner";
 import { usePredictor } from "./use-predictor";
 
-/** Formulaire « Choisis ton pseudo » affiché avant le premier pronostic. */
-export function PseudoForm() {
+/** Formulaire « Choisis ton pseudo » affiché avant le premier pronostic ou le premier vote. */
+export function PseudoForm({
+  description = "Pas besoin de compte. Ton pseudo apparaîtra dans le classement des pronostiqueurs.",
+}: {
+  description?: string;
+}) {
   const { inscrire } = usePredictor();
   const [pseudo, setPseudo] = useState("");
   const [occupe, setOccupe] = useState(false);
@@ -33,9 +37,7 @@ export function PseudoForm() {
           </span>
           <div>
             <h2 className="font-display text-xl font-bold uppercase tracking-wide">Choisis ton pseudo</h2>
-            <p className="mt-1 text-sm text-white/65">
-              Pas besoin de compte. Ton pseudo apparaîtra dans le classement des pronostiqueurs.
-            </p>
+            <p className="mt-1 text-sm text-white/65">{description}</p>
           </div>
         </div>
         <div className="flex flex-col gap-3 sm:flex-row">

@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import type { StatsPronostic, LigneClassement } from "@/lib/pronostics";
+import type { CompteVote } from "@/lib/vote";
 import type {
   Team,
   Player,
@@ -193,4 +194,13 @@ export async function getPredictionLeaderboard(): Promise<LigneClassement[]> {
     .order("played", { ascending: true })
     .limit(20);
   return (data ?? []) as LigneClassement[];
+}
+
+// ------------------------------------------------------------------
+// Vote du public pour l'homme du match (vue publique : totaux uniquement)
+// ------------------------------------------------------------------
+export async function getMotmCounts(matchId: string): Promise<CompteVote[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("motm_vote_counts").select("*").eq("match_id", matchId);
+  return (data ?? []) as CompteVote[];
 }
