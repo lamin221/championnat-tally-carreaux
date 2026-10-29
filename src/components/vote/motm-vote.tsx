@@ -33,7 +33,9 @@ export function MotmVote({
   ouvert,
   limite,
   officielId,
+  children,
 }: {
+  children?: React.ReactNode;
   matchId: string;
   home: Team;
   away: Team;
@@ -260,6 +262,17 @@ export function MotmVote({
               </>
             )}
           </div>
+        )}
+
+        {/* ---------- Détail du match : révélé après le vote ---------- */}
+        {afficherResultats ? (
+          <div className="mt-8 border-t border-white/10 pt-6 text-foreground">{children}</div>
+        ) : (
+          children && (
+            <p className="mt-6 rounded-2xl border border-dashed border-white/15 p-4 text-center text-sm text-white/60">
+              Vote pour découvrir le détail du match : buteurs, passeurs, sanctions et compositions.
+            </p>
+          )
         )}
       </div>
     </section>

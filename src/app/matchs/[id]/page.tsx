@@ -188,6 +188,60 @@ export default async function MatchDetailPage({
     ? `⚽ ${homeTeam.name} ${match.home_score} - ${match.away_score} ${awayTeam.name} — Championnat Tally Carreaux`
     : `📅 Prochain match : ${homeTeam.name} vs ${awayTeam.name} — Championnat Tally Carreaux`;
 
+  const detail = (
+    <>
+      {/* Fil du match */}
+      <Reveal>
+        <section className="card p-5 sm:p-8">
+          <h2 className="mb-6 flex items-center gap-2 font-display text-lg font-semibold">
+            <ListOrdered size={18} className="text-yellow-500" /> Fil du match
+          </h2>
+          {evenements.length === 0 ? (
+            <p className="text-sm text-muted-foreground">Aucun but ni sanction enregistré.</p>
+          ) : (
+            <ol className="relative">
+              <span aria-hidden className="absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent" />
+              {evenements.map((e) => {
+                const carte = (
+                  <div
+                    className={`inline-flex items-center gap-3 rounded-2xl bg-muted px-4 py-3 ring-1 ring-border ${
+                      e.side === "home" ? "flex-row-reverse text-right" : ""
+                    }`}
+                  >
+                    <EventIcon kind={e.kind} />
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold">{e.title}</span>
+                      {e.sub && <span className="block text-xs text-muted-foreground">{e.sub}</span>}
+                    </span>
+                  </div>
+                );
+                return (
+                  <li key={e.key} className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-2.5">
+                    <div className="flex justify-end">{e.side === "home" ? carte : null}</div>
+                    <span className="score-numeral z-10 grid h-10 min-w-10 place-items-center rounded-full bg-gradient-to-br from-[#0a1440] to-[#060b1f] px-2 text-sm text-yellow-300 ring-2 ring-yellow-400/40">
+                      {e.minute !== null ? `${e.minute}'` : "–"}
+                    </span>
+                    <div className="flex justify-start">{e.side === "away" ? carte : null}</div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+        </section>
+      </Reveal>
+
+      {/* Compositions */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Reveal>
+          <Lineup team={homeTeam} players={lineupByTeam(homeTeam.id)} />
+        </Reveal>
+        <Reveal delay={120}>
+          <Lineup team={awayTeam} players={lineupByTeam(awayTeam.id)} />
+        </Reveal>
+      </div>
+    </>
+  );
+
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-8">
       <Link
@@ -277,8 +331,8 @@ export default async function MatchDetailPage({
         </Reveal>
       )}
 
-      {/* Vote du public pour l'homme du match (matchs terminés) */}
-      {finished && (() => {
+      {/* Vote du public (matchs terminés) : le détail du match n'apparaît qu'après le vote */}
+      {finished ? (() => {
         // Mêmes joueurs que ceux acceptés par la base : la composition du match, sinon les deux effectifs
         const presents = new Set(details.lineups.map((l) => l.player_id));
         const votables = players.filter((p) =>
@@ -302,61 +356,13 @@ export default async function MatchDetailPage({
                 ouvert={voteOuvert(match)}
                 limite={limiteVote(match)}
                 officielId={match.man_of_the_match_id}
-              />
+              >
+                {detail}
+              </MotmVote>
             </div>
           </Reveal>
         );
-      })()}
-
-      {/* Fil du match */}
-      <Reveal>
-        <section className="card p-5 sm:p-8">
-          <h2 className="mb-6 flex items-center gap-2 font-display text-lg font-semibold">
-            <ListOrdered size={18} className="text-yellow-500" /> Fil du match
-          </h2>
-          {evenements.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucun but ni sanction enregistré.</p>
-          ) : (
-            <ol className="relative">
-              <span aria-hidden className="absolute bottom-0 left-1/2 top-0 w-px -translate-x-1/2 bg-gradient-to-b from-transparent via-border to-transparent" />
-              {evenements.map((e) => {
-                const carte = (
-                  <div
-                    className={`inline-flex items-center gap-3 rounded-2xl bg-muted px-4 py-3 ring-1 ring-border ${
-                      e.side === "home" ? "flex-row-reverse text-right" : ""
-                    }`}
-                  >
-                    <EventIcon kind={e.kind} />
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold">{e.title}</span>
-                      {e.sub && <span className="block text-xs text-muted-foreground">{e.sub}</span>}
-                    </span>
-                  </div>
-                );
-                return (
-                  <li key={e.key} className="relative grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-2.5">
-                    <div className="flex justify-end">{e.side === "home" ? carte : null}</div>
-                    <span className="score-numeral z-10 grid h-10 min-w-10 place-items-center rounded-full bg-gradient-to-br from-[#0a1440] to-[#060b1f] px-2 text-sm text-yellow-300 ring-2 ring-yellow-400/40">
-                      {e.minute !== null ? `${e.minute}'` : "–"}
-                    </span>
-                    <div className="flex justify-start">{e.side === "away" ? carte : null}</div>
-                  </li>
-                );
-              })}
-            </ol>
-          )}
-        </section>
-      </Reveal>
-
-      {/* Compositions */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Reveal>
-          <Lineup team={homeTeam} players={lineupByTeam(homeTeam.id)} />
-        </Reveal>
-        <Reveal delay={120}>
-          <Lineup team={awayTeam} players={lineupByTeam(awayTeam.id)} />
-        </Reveal>
-      </div>
+      })() : detail}
 
       <CommentsSection matchId={match.id} />
     </div>
