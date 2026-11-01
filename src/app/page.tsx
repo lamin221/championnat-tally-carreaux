@@ -1,6 +1,5 @@
 import { CalendarDays, Goal, Trophy, Swords } from "lucide-react";
 import { HeroChampionnat } from "@/components/home/hero-championnat";
-import { OctobreRoseBanner } from "@/components/home/octobre-rose-banner";
 import { BrandMarquee } from "@/components/home/brand-marquee";
 import { Reveal } from "@/components/home/reveal";
 import { StatTile } from "@/components/home/stat-tile";
@@ -54,7 +53,7 @@ export default async function DashboardPage() {
       <LiveRefresher sondage={liveMatches.length > 0} />
       {liveMatches.length > 0 && <LiveBanner matches={liveMatches} teams={teams} />}
 
-      <OctobreRoseBanner />
+      
 
       <HeroChampionnat
         imageSrc="/images/hero-match.jpg"
